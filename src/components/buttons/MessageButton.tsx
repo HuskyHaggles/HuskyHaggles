@@ -4,15 +4,15 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
 }
 
-const AddToCartButton: React.FC<ButtonProps> = ({ children, ...props }) => {
-  const handleAddToCart = () => {
-    console.log("Add to Cart Button Pressed");
+const MessageButton: React.FC<ButtonProps> = ({ children, ...props }) => {
+  const handleMessage = () => {
+    console.log("Message Button Pressed");
   };
 
   return (
     <button
       className="bg-yellow-500 text-darkBg hover:bg-yellow-600 hover:scale-105 my-2 px-6 py-3 rounded-lg transition-transform duration-200 focus:outline-none flex items-center justify-center"
-      onClick={handleAddToCart}
+      onClick={handleMessage}
       {...props}
     >
       {children}
@@ -20,4 +20,4 @@ const AddToCartButton: React.FC<ButtonProps> = ({ children, ...props }) => {
   );
 };
 
-export default AddToCartButton;
+export default MessageButton;
