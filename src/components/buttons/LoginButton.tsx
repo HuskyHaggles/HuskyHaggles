@@ -1,23 +1,15 @@
-import React from "react";
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  children: React.ReactNode;
+
+import { Button } from "@mui/material"
+
+interface LoginButtonProps {
+  isLoading?: boolean
 }
 
-const LoginButton: React.FC<ButtonProps> = ({ children, ...props }) => {
-  const handleLogin = () => {
-    console.log("Login Button Pressed");
-  };
-
+export default function LoginButton({ isLoading = false }: LoginButtonProps) {
   return (
-    <button
-      className="bg-blue-500 text-white hover:bg-blue-600 hover:scale-105 my-2 px-6 py-3 rounded-lg transition-transform duration-200 focus:outline-none flex items-center justify-center"
-      onClick={handleLogin}
-      {...props}
-    >
-      {children}
-    </button>
-  );
-};
-
-export default LoginButton;
+    <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }} disabled={isLoading}>
+      {isLoading ? "Logging In..." : "Log In"}
+    </Button>
+  )
+}

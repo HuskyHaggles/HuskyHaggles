@@ -1,13 +1,21 @@
-import LoginButton from "../components/buttons/LoginButton";
-import SignUpButton from "../components/buttons/SignUpButton";
-import AddToCartButton from "../components/buttons/MessageButton";
+import { useNavigate } from "react-router-dom";
+import MessageButton from "../components/buttons/MessageButton";
+import { Button } from "@mui/material";
 
 const Home = () => {
+  const navigate = useNavigate();
+
   return (
     <div>
-      <LoginButton>Login</LoginButton>
-      <SignUpButton>Signup</SignUpButton>
-      <AddToCartButton>Message</AddToCartButton>
+      <h1>Husky Haggles</h1>
+      <p>
+        Welcome to Husky Haggles! List items, purchase items, and more from
+        other Northeastern students!
+      </p>
+      <Button onClick={() => navigate("/login")}>Login</Button>
+      <Button onClick={() => navigate("/signup")}>Signup</Button>
+      <Button onClick={() => navigate("/products")}>View Listings</Button>
+      <MessageButton>Message</MessageButton>
     </div>
   );
 };
