@@ -1,9 +1,9 @@
+import React from "react";
+import SignupPage from "../components/SignupForm";
+import { useNavigate } from "react-router-dom";
+
 const SignUp = () => {
-  return (
-    <div>
-      <h1>SignUp</h1>
-    </div>
-  );
+    return <SignupPage />;
 };
 
 export default SignUp;

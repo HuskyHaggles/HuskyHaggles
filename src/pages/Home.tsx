@@ -14,7 +14,7 @@ const Home = () => {
       </p>
       <Button onClick={() => navigate("/login")}>Login</Button>
       <Button onClick={() => navigate("/signup")}>Signup</Button>
-      <Button onClick={() => navigate("/products")}>View Listings</Button>
+      <Button onClick={() => navigate("/listings")}>View Listings</Button>
       <MessageButton>Message</MessageButton>
     </div>
   );

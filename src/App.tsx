@@ -5,9 +5,9 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import About from "./pages/About";
 import SignUp from "./pages/SignUp";
-import Products from "./pages/Products";
+import Listings from "./pages/Listings";
 import { Navigate } from "react-router-dom";
-import ProductDetails from "./pages/ProductDetails";
+import ListingDetails from "./pages/ListingDetails";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -21,8 +21,8 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/productDetails" element={<ProductDetails />} />
+            <Route path="/listings" element={<Listings />} />
+            <Route path="/:username/:itemID" element={<ListingDetails />} />
           </Routes>
         </div>
       </Router>

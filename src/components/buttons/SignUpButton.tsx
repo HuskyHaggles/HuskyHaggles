@@ -1,22 +1,36 @@
-import React from "react";
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  children: React.ReactNode;
+
+// import { Button } from "@mui/material"
+
+// interface LoginButtonProps {
+//   isLoading?: boolean
+// }
+
+// export default function SingupButton({ isLoading = false }: LoginButtonProps) {
+//   return (
+//     <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }} disabled={isLoading}>
+//       {isLoading ? "Logging In..." : "Log In"}
+//     </Button>
+//   )
+// }
+
+import { Button } from "@mui/material";
+
+interface SignupButtonProps {
+  isLoading?: boolean;
 }
 
-const SignUpButton: React.FC<ButtonProps> = ({ children, ...props }) => {
-  const handleSignup = () => {
-    console.log("Signup Button Pressed");
-  };
+export default function SignupButton({ isLoading = false }: SignupButtonProps) {
   return (
-    <button
-      className="bg-green-500 text-white hover:bg-green-600 hover:scale-105 my-2 px-6 py-3 rounded-lg transition-transform duration-200 focus:outline-none flex items-center justify-center"
-      onClick={handleSignup}
-      {...props}
+    <Button 
+      type="submit" 
+      fullWidth 
+      variant="contained" 
+      color="primary" 
+      sx={{ mt: 3, mb: 2 }} 
+      disabled={isLoading}
     >
-      {children}
-    </button>
+      {isLoading ? "Signing Up..." : "Sign Up"}
+    </Button>
   );
-};
-
-export default SignUpButton;
+}
