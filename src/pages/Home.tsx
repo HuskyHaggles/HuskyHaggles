@@ -1,22 +1,50 @@
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import MessageButton from "../components/buttons/MessageButton";
-import { Button } from "@mui/material";
+import { Button, Container, Typography } from "@mui/material";
 
 const Home = () => {
   const navigate = useNavigate();
 
   return (
-    <div>
-      <h1>Husky Haggles</h1>
-      <p>
-        Welcome to Husky Haggles! List items, purchase items, and more from
-        other Northeastern students!
-      </p>
-      <Button onClick={() => navigate("/login")}>Login</Button>
-      <Button onClick={() => navigate("/signup")}>Signup</Button>
-      <Button onClick={() => navigate("/listings")}>View Listings</Button>
-      <MessageButton>Message</MessageButton>
-    </div>
+    <Container sx={{ mt: 4, textAlign: "center" }}>
+      <Typography variant="h3" gutterBottom>
+        Welcome to Husky Haggles!
+      </Typography>
+      <Typography variant="body1" paragraph>
+        Buy, sell, and trade with fellow Northeastern students.
+      </Typography>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={() => navigate("/login")}
+        sx={{ m: 1 }}
+      >
+        Login
+      </Button>
+      <Button
+        variant="contained"
+        color="secondary"
+        onClick={() => navigate("/signup")}
+        sx={{ m: 1 }}
+      >
+        Signup
+      </Button>
+      <Button
+        variant="contained"
+        onClick={() => navigate("/listings")}
+        sx={{ m: 1 }}
+      >
+        View Listings
+      </Button>
+      <Button
+        variant="contained"
+        color="success"
+        onClick={() => navigate("/users")}
+        sx={{ m: 1 }}
+      >
+        View Users
+      </Button>
+    </Container>
   );
 };
 

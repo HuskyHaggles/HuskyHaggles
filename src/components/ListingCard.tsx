@@ -11,9 +11,11 @@ import { useNavigate } from "react-router-dom";
 
 interface Listing {
   id: string;
+  user_id: string;
   name: string;
   description: string;
   images: string[];
+  username: string;
 }
 
 interface ListingCardProps {
@@ -36,11 +38,14 @@ const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
         <Typography variant="body2" color="textSecondary">
           {listing.description}
         </Typography>
+        <Typography variant="body2" color="textSecondary">
+          Seller: {listing.username}
+        </Typography>
       </CardContent>
       <CardActions>
         <Button
           size="small"
-          onClick={() => navigate(`/${"username"}/${listing.id}`)}
+          onClick={() => navigate(`/user/${listing.username}/${listing.id}`)}
         >
           View Details
         </Button>

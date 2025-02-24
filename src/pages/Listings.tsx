@@ -5,10 +5,13 @@ import { supabase } from "../supabaseClient";
 
 interface Listing {
   id: string;
+  user_id: string;
   name: string;
   description: string;
   inStock: boolean;
   images: string[];
+  created_at: string;
+  username: string;
 }
 
 const Listings: React.FC = () => {
@@ -17,11 +20,23 @@ const Listings: React.FC = () => {
 
   useEffect(() => {
     const fetchListings = async () => {
-      const { data, error } = await supabase.from("listings").select("*");
+      const { data, error } = await supabase
+        .from("listings")
+        .select(
+          "id, user_id, name, description, in_stock, images, created_at, users(username)"
+        )
+        .order("created_at", { ascending: false });
+
       if (error) {
         console.error("Error fetching listings:", error);
       } else {
-        setListings(data);
+        setListings(
+          data.map((listing) => ({
+            ...listing,
+            inStock: listing.in_stock,
+            username: listing.users?.[0]?.username || "Unknown",
+          }))
+        );
       }
       setLoading(false);
     };

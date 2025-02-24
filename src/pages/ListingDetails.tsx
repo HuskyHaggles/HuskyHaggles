@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { supabase } from "../supabaseClient";
 import {
   Container,
   Typography,
@@ -8,19 +6,22 @@ import {
   CardMedia,
   CardContent,
 } from "@mui/material";
+import { useParams } from "react-router-dom";
+import { supabase } from "../supabaseClient";
 
 interface Listing {
   id: string;
+  user_id: string;
   name: string;
   description: string;
-  inStock: boolean;
   images: string[];
+  username: string;
 }
 
 const ListingDetails: React.FC = () => {
-  const { username, itemID } = useParams<{
+  const { username, listing_uuid } = useParams<{
     username: string;
-    itemID: string;
+    listing_uuid: string;
   }>();
   const [listing, setListing] = useState<Listing | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -29,19 +30,23 @@ const ListingDetails: React.FC = () => {
     const fetchListing = async () => {
       const { data, error } = await supabase
         .from("listings")
-        .select("*")
-        .eq("id", itemID)
+        .select("id, user_id, name, description, images, users(username)")
+        .eq("id", listing_uuid)
         .single();
+
       if (error) {
         console.error("Error fetching listing:", error);
       } else {
-        setListing(data);
+        setListing({
+          ...data,
+          username: data.users?.[0]?.username || "Unknown",
+        });
       }
       setLoading(false);
     };
 
     fetchListing();
-  }, [itemID]);
+  }, [username, listing_uuid]);
 
   if (loading) return <Typography>Loading...</Typography>;
   if (!listing) return <Typography>Listing not found</Typography>;
@@ -58,6 +63,7 @@ const ListingDetails: React.FC = () => {
         <CardContent>
           <Typography variant="h4">{listing.name}</Typography>
           <Typography variant="body1">{listing.description}</Typography>
+          <Typography variant="body2">Seller: {listing.username}</Typography>
         </CardContent>
       </Card>
     </Container>
