@@ -43,7 +43,6 @@ const Listings: React.FC = () => {
             inStock: listing.in_stock,
             images: listing.images,
             created_at: listing.created_at,
-            // Calculate seller details from the joined users table
             seller_username: listing.users?.[0]?.username || "Unknown",
             seller_name: listing.users?.[0]?.name || "Unknown",
             seller_profile_picture: listing.users?.[0]?.profile_picture || "",

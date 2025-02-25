@@ -15,12 +15,9 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/users" element={<Users />} />
-        <Route path="/user/:username" element={<UserDetails />} />
+        <Route path="/u/:username" element={<UserDetails />} />
         <Route path="/listings" element={<Listings />} />
-        <Route
-          path="/user/:username/:listing_uuid"
-          element={<ListingDetails />}
-        />
+        <Route path="/u/:username/:listing_uuid" element={<ListingDetails />} />
       </Routes>
     </Router>
   );

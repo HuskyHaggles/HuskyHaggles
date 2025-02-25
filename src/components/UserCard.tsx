@@ -23,7 +23,7 @@ const UserCard: React.FC<UserCardProps> = ({ user }) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate(`/user/${user.username}`);
+    navigate(`/u/${user.username}`);
   };
 
   return (

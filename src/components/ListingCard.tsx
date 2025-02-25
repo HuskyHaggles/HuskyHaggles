@@ -7,6 +7,7 @@ import {
   CardActionArea,
   Box,
 } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 interface Listing {
   id: string;
@@ -25,14 +26,28 @@ interface ListingCardProps {
 }
 
 const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    // Navigate to /u/username/listing_uuid
+    navigate(`/u/${listing.seller_username}/${listing.id}`);
+  };
+
   return (
     <Card variant="outlined" sx={{ mb: 2 }}>
-      <CardActionArea>
-        {listing.images && listing.images.length > 0 && (
+      <CardActionArea onClick={handleClick}>
+        {listing.images && listing.images.length > 0 ? (
           <Box
             component="img"
             src={listing.images[0]}
             alt={listing.name}
+            sx={{ width: "100%", height: 150, objectFit: "cover" }}
+          />
+        ) : (
+          <Box
+            component="img"
+            src="https://via.placeholder.com/300x150?text=No+Image"
+            alt="No Image Available"
             sx={{ width: "100%", height: 150, objectFit: "cover" }}
           />
         )}
