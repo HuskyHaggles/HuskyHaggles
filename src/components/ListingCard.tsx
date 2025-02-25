@@ -1,21 +1,23 @@
+// components/ListingCard.tsx
 import React from "react";
 import {
   Card,
-  CardMedia,
   CardContent,
   Typography,
-  CardActions,
-  Button,
+  CardActionArea,
+  Box,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
 
 interface Listing {
   id: string;
-  user_id: string;
   name: string;
   description: string;
+  inStock: boolean;
   images: string[];
-  username: string;
+  created_at: string;
+  seller_username: string;
+  seller_name: string;
+  seller_profile_picture: string;
 }
 
 interface ListingCardProps {
@@ -23,33 +25,25 @@ interface ListingCardProps {
 }
 
 const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
-  const navigate = useNavigate();
-
   return (
-    <Card>
-      <CardMedia
-        component="img"
-        height="200"
-        image={listing.images[0]}
-        alt={listing.name}
-      />
-      <CardContent>
-        <Typography variant="h5">{listing.name}</Typography>
-        <Typography variant="body2" color="textSecondary">
-          {listing.description}
-        </Typography>
-        <Typography variant="body2" color="textSecondary">
-          Seller: {listing.username}
-        </Typography>
-      </CardContent>
-      <CardActions>
-        <Button
-          size="small"
-          onClick={() => navigate(`/user/${listing.username}/${listing.id}`)}
-        >
-          View Details
-        </Button>
-      </CardActions>
+    <Card variant="outlined" sx={{ mb: 2 }}>
+      <CardActionArea>
+        {listing.images && listing.images.length > 0 && (
+          <Box
+            component="img"
+            src={listing.images[0]}
+            alt={listing.name}
+            sx={{ width: "100%", height: 150, objectFit: "cover" }}
+          />
+        )}
+        <CardContent>
+          <Typography variant="h6">{listing.name}</Typography>
+          <Typography variant="body2">{listing.description}</Typography>
+          <Typography variant="caption" color="text.secondary">
+            Seller: {listing.seller_name}
+          </Typography>
+        </CardContent>
+      </CardActionArea>
     </Card>
   );
 };

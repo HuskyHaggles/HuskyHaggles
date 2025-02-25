@@ -1,29 +1,24 @@
+// Users.tsx
 import React, { useEffect, useState } from "react";
-import {
-  Container,
-  Typography,
-  List,
-  ListItemButton,
-  ListItemText,
-} from "@mui/material";
+import { Container, Typography, Grid } from "@mui/material";
+import UserCard from "../components/UserCard";
 import { supabase } from "../supabaseClient";
-import { useNavigate } from "react-router-dom";
 
 interface User {
   id: string;
   username: string;
+  profile_picture: string;
 }
 
 const Users: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUsers = async () => {
       const { data, error } = await supabase
         .from("users")
-        .select("id, username")
+        .select("id, username, profile_picture")
         .order("username", { ascending: true });
 
       if (error) {
@@ -44,17 +39,16 @@ const Users: React.FC = () => {
       </Typography>
       {loading ? (
         <Typography>Loading users...</Typography>
-      ) : (
-        <List>
+      ) : users.length > 0 ? (
+        <Grid container spacing={2}>
           {users.map((user) => (
-            <ListItemButton
-              key={user.id}
-              onClick={() => navigate(`/user/${user.username}`)}
-            >
-              <ListItemText primary={user.username} />
-            </ListItemButton>
+            <Grid item key={user.id} xs={6} sm={4} md={3}>
+              <UserCard user={user} />
+            </Grid>
           ))}
-        </List>
+        </Grid>
+      ) : (
+        <Typography>No users found.</Typography>
       )}
     </Container>
   );
