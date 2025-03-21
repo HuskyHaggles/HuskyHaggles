@@ -10,7 +10,8 @@ interface User {
   profile_picture: string;
   email: string;
   created_at: string;
-  name: string; // Real name
+  firstName: string;
+  lastName: string;
 }
 
 const UserDetails: React.FC = () => {
@@ -22,7 +23,9 @@ const UserDetails: React.FC = () => {
     const fetchUserDetails = async () => {
       const { data, error } = await supabase
         .from("users")
-        .select("id, username, profile_picture, email, created_at, name") // include id here
+        .select(
+          "id, username, profile_picture, email, created_at, firstName, lastName"
+        )
         .eq("username", username)
         .single();
 
@@ -72,7 +75,7 @@ const UserDetails: React.FC = () => {
         />
         <Box>
           <Typography variant="h4">{user.username}</Typography>
-          <Typography variant="h6">{user.name}</Typography>
+          <Typography variant="h6">{`${user.firstName} ${user.lastName}`}</Typography>
         </Box>
       </Box>
       <Typography variant="body1">Email: {user.email}</Typography>

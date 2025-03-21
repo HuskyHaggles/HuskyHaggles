@@ -1,3 +1,4 @@
+// src/components/SignupForm.tsx
 import React, { useState } from "react";
 import {
   Box,
@@ -13,16 +14,17 @@ import {
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-
 import SignUpButton from "./buttons/SignUpButton";
+import { useNavigate } from "react-router-dom";
 
 const theme = createTheme();
 
-export default function SignupPage() {
+export default function SignupForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const navigate = useNavigate();
 
   const handleClickShowPassword = () => {
     setShowPassword((prev) => !prev);
@@ -41,11 +43,9 @@ export default function SignupPage() {
     const email = (data.get("email") as string)?.trim();
     const password = data.get("password") as string;
     const confirmPassword = data.get("confirmPassword") as string;
-    // profilePicture is optional
 
     let validationErrors: string[] = [];
 
-    // Required fields validation
     if (!firstName) validationErrors.push("First Name is required.");
     if (!lastName) validationErrors.push("Last Name is required.");
     if (!username) validationErrors.push("Username is required.");
@@ -54,97 +54,13 @@ export default function SignupPage() {
     if (!confirmPassword)
       validationErrors.push("Confirm password is required.");
 
-    // Validate first and last names: allow letters (with diacritical marks), hyphens, apostrophes, spaces.
-    const nameRegex = /^[\p{L}\-'\s]+$/u;
-    if (firstName && !nameRegex.test(firstName)) {
-      validationErrors.push(
-        "First Name may only contain letters, hyphens (-), apostrophes ('), and spaces."
-      );
-    }
-    if (lastName && !nameRegex.test(lastName)) {
-      validationErrors.push(
-        "Last Name may only contain letters, hyphens (-), apostrophes ('), and spaces."
-      );
-    }
+    // Additional validations can be added here.
 
-    // Validate username: allow letters, numbers, underscores, hyphens, and periods.
-    const usernameRegex = /^[A-Za-z0-9_.-]+$/;
-    if (username && !usernameRegex.test(username)) {
-      validationErrors.push(
-        "Username may only contain letters, numbers, underscores (_), hyphens (-), and periods (.)"
-      );
-    }
-
-    // Validate email address.
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (email && !emailRegex.test(email)) {
-      validationErrors.push(
-        "Please enter a valid email address (e.g., username@domain.com)."
-      );
-    }
-
-    // Validate password requirements
-    if (password && password.length < 14) {
-      validationErrors.push("Password must be 14 characters or longer.");
-    }
-    const loweredPassword = password.toLowerCase();
-    if (firstName && loweredPassword.includes(firstName.toLowerCase())) {
-      validationErrors.push("Password must not contain your first name.");
-    }
-    if (lastName && loweredPassword.includes(lastName.toLowerCase())) {
-      validationErrors.push("Password must not contain your last name.");
-    }
-    if (username && loweredPassword.includes(username.toLowerCase())) {
-      validationErrors.push("Password must not contain your username.");
-    }
-    // Check that the email username part is not included in the password
-    if (email) {
-      const emailUsername = email.split("@")[0];
-      if (
-        emailUsername &&
-        loweredPassword.includes(emailUsername.toLowerCase())
-      ) {
-        validationErrors.push(
-          "Password must not contain the username part of your email."
-        );
-      }
-    }
-    if (email && loweredPassword.includes(email.toLowerCase())) {
-      validationErrors.push("Password must not contain your email.");
-    }
-    const numberRegex = /[0-9]/;
-    const lowercaseRegex = /[a-z]/;
-    const uppercaseRegex = /[A-Z]/;
-    const specialCharRegex = /[^A-Za-z0-9]/;
-    if (password && !numberRegex.test(password)) {
-      validationErrors.push("Password must include at least 1 number (0-9).");
-    }
-    if (password && !lowercaseRegex.test(password)) {
-      validationErrors.push(
-        "Password must include at least 1 lowercase letter (a-z)."
-      );
-    }
-    if (password && !uppercaseRegex.test(password)) {
-      validationErrors.push(
-        "Password must include at least 1 uppercase letter (A-Z)."
-      );
-    }
-    if (password && !specialCharRegex.test(password)) {
-      validationErrors.push(
-        "Password must include at least 1 special character (e.g., !@#$%^&*)."
-      );
-    }
-    if (password && confirmPassword && password !== confirmPassword) {
-      validationErrors.push("Passwords do not match.");
-    }
-
-    // If any validation errors exist, show them.
     if (validationErrors.length > 0) {
       setErrors(validationErrors);
       return;
     }
 
-    // Clear errors and simulate submission.
     setErrors([]);
     setIsLoading(true);
 
@@ -158,6 +74,7 @@ export default function SignupPage() {
       profilePicture: data.get("profilePicture"),
     });
 
+    // Simulate sign up delay
     await new Promise((resolve) => setTimeout(resolve, 2000));
     setIsLoading(false);
   };
@@ -177,7 +94,6 @@ export default function SignupPage() {
             <Typography component="h1" variant="h5" align="center">
               Sign Up
             </Typography>
-            {/* Display all errors in a styled alert */}
             {errors.length > 0 && (
               <Box sx={{ mt: 2, width: "100%" }}>
                 <Alert severity="error">
@@ -195,7 +111,6 @@ export default function SignupPage() {
               noValidate
               sx={{ mt: 1 }}
             >
-              {/* First Name and Last Name side-by-side */}
               <Box sx={{ display: "flex", gap: 2 }}>
                 <TextField
                   margin="normal"
@@ -278,7 +193,6 @@ export default function SignupPage() {
                   ),
                 }}
               />
-              {/* Upload profile picture field (optional) */}
               <Box sx={{ mt: 2 }}>
                 <Button variant="contained" component="label" fullWidth>
                   Upload profile picture (optional)
@@ -291,6 +205,14 @@ export default function SignupPage() {
                 </Button>
               </Box>
               <SignUpButton isLoading={isLoading} />
+            </Box>
+            <Box sx={{ mt: 2, textAlign: "center" }}>
+              <Typography variant="body2">
+                Already have an account?{" "}
+                <Button onClick={() => navigate("/login")} variant="text">
+                  Login
+                </Button>
+              </Typography>
             </Box>
           </Paper>
         </Box>

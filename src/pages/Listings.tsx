@@ -1,79 +1,121 @@
-// Listings.tsx
-import React, { useEffect, useState } from "react";
-import { Container, Typography, Grid } from "@mui/material";
-import ListingCard from "../components/ListingCard";
+import React, { useState, useEffect } from "react";
+import { Box, Grid, Paper, Typography, CardMedia } from "@mui/material";
+import ListingsFilter, { FilterValues } from "../components/ListingsFilter";
 import { supabase } from "../supabaseClient";
-
-interface Listing {
-  id: string;
-  user_id: string;
-  name: string;
-  description: string;
-  inStock: boolean;
-  images: string[];
-  created_at: string;
-  seller_username: string;
-  seller_name: string;
-  seller_profile_picture: string;
-}
+import { useNavigate } from "react-router-dom";
 
 const Listings: React.FC = () => {
-  const [listings, setListings] = useState<Listing[]>([]);
+  const navigate = useNavigate();
+  const [filters, setFilters] = useState<FilterValues>({
+    searchTerm: "",
+    inStockOnly: false,
+    dateFrom: "",
+    dateTo: "",
+    category: "",
+    location: "",
+    condition: "",
+  });
+  const [listings, setListings] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
+  const fetchListings = async () => {
+    setLoading(true);
+
+    let query = supabase.from("listings").select(`
+        id, 
+        name, 
+        description, 
+        images, 
+        price, 
+        user_id, 
+        users!inner(firstName, lastName, username)
+      `);
+
+    if (filters.searchTerm)
+      query = query.ilike("name", `%${filters.searchTerm}%`);
+    if (filters.inStockOnly) query = query.eq("in_stock", true);
+    if (filters.dateFrom) query = query.gte("created_at", filters.dateFrom);
+    if (filters.dateTo) query = query.lte("created_at", filters.dateTo);
+    if (filters.category)
+      query = query.ilike("category", `%${filters.category}%`);
+    if (filters.location)
+      query = query.ilike("location", `%${filters.location}%`);
+    if (filters.condition)
+      query = query.ilike("condition", `%${filters.condition}%`);
+
+    const { data, error } = await query;
+    if (error) {
+      console.error("Error fetching listings:", error);
+    } else {
+      setListings(data || []);
+    }
+    setLoading(false);
+  };
+
   useEffect(() => {
-    const fetchListings = async () => {
-      const { data, error } = await supabase
-        .from("listings")
-        .select(
-          `id, user_id, name, description, in_stock, images, created_at,
-           users(username, name, profile_picture)`
-        )
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        console.error("Error fetching listings:", error);
-      } else if (data) {
-        setListings(
-          data.map((listing: any) => ({
-            id: listing.id,
-            user_id: listing.user_id,
-            name: listing.name,
-            description: listing.description,
-            inStock: listing.in_stock,
-            images: listing.images,
-            created_at: listing.created_at,
-            seller_username: listing.users?.[0]?.username || "Unknown",
-            seller_name: listing.users?.[0]?.name || "Unknown",
-            seller_profile_picture: listing.users?.[0]?.profile_picture || "",
-          }))
-        );
-      }
-      setLoading(false);
-    };
-
     fetchListings();
-  }, []);
+  }, [filters]);
+
+  const handleListingClick = (listing: any) => {
+    if (listing.users?.username) {
+      navigate(`/u/${listing.users.username}/${listing.id}`);
+    } else {
+      navigate(`/listing/${listing.id}`);
+    }
+  };
 
   return (
-    <Container sx={{ mt: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Listings
-      </Typography>
-      {loading ? (
-        <Typography>Loading listings...</Typography>
-      ) : listings.length > 0 ? (
-        <Grid container spacing={3}>
-          {listings.map((listing) => (
-            <Grid item xs={12} sm={6} md={4} key={listing.id}>
-              <ListingCard listing={listing} />
-            </Grid>
-          ))}
-        </Grid>
-      ) : (
-        <Typography>No listings found.</Typography>
-      )}
-    </Container>
+    <Box sx={{ display: "flex", p: 2, gap: 2 }}>
+      <Box sx={{ width: { xs: "100%", md: "300px" } }}>
+        <ListingsFilter onFilterChange={setFilters} />
+      </Box>
+
+      <Box sx={{ flexGrow: 1 }}>
+        {loading ? (
+          <Typography>Loading listings...</Typography>
+        ) : (
+          <Grid container spacing={2}>
+            {listings.map((listing) => (
+              <Grid item xs={12} sm={6} md={4} key={listing.id}>
+                <Paper
+                  onClick={() => handleListingClick(listing)}
+                  sx={{ p: 2, cursor: "pointer", position: "relative" }}
+                >
+                  {listing.images?.length > 0 ? (
+                    <CardMedia
+                      component="img"
+                      image={listing.images[0]}
+                      alt={listing.name}
+                      sx={{ height: 150, objectFit: "cover", mb: 1 }}
+                    />
+                  ) : (
+                    <CardMedia
+                      component="img"
+                      image="https://via.placeholder.com/300x150?text=No+Image"
+                      alt="No Image Available"
+                      sx={{ height: 150, objectFit: "cover", mb: 1 }}
+                    />
+                  )}
+                  <Typography variant="h6" gutterBottom>
+                    {listing.name}
+                  </Typography>
+                  {listing.price && (
+                    <Typography variant="body2" color="text.secondary">
+                      Price: ${listing.price}
+                    </Typography>
+                  )}
+                  <Typography variant="body2">{listing.description}</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Seller: {listing.users?.first_name}{" "}
+                    {listing.users?.last_name} (@{listing.users?.username})
+                  </Typography>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        )}
+      </Box>
+    </Box>
   );
 };
 

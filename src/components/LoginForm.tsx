@@ -1,25 +1,35 @@
-import type React from "react"
-import { useState } from "react"
-import { Box, Container, TextField, Typography, Paper } from "@mui/material"
-import { ThemeProvider, createTheme } from "@mui/material/styles"
-import LoginButton from "./buttons/LoginButton"
+// src/components/LoginForm.tsx
+import React, { useState } from "react";
+import {
+  Box,
+  Container,
+  TextField,
+  Typography,
+  Paper,
+  Button,
+} from "@mui/material";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import LoginButton from "./buttons/LoginButton";
+import { useNavigate } from "react-router-dom";
 
-const theme = createTheme() 
+const theme = createTheme();
 
-export default function LoginPage() {
-  const [isLoading, setIsLoading] = useState(false)
+export default function LoginForm() {
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setIsLoading(true)
-    const data = new FormData(event.currentTarget)
+    event.preventDefault();
+    setIsLoading(true);
+    const data = new FormData(event.currentTarget);
     console.log({
       email: data.get("email"),
       password: data.get("password"),
-    })
-
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    setIsLoading(false)
-  }
+    });
+    // Simulate authentication delay
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    setIsLoading(false);
+  };
 
   return (
     <ThemeProvider theme={theme}>
@@ -36,7 +46,12 @@ export default function LoginPage() {
             <Typography component="h1" variant="h5" align="center">
               Log in
             </Typography>
-            <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+            <Box
+              component="form"
+              onSubmit={handleSubmit}
+              noValidate
+              sx={{ mt: 1 }}
+            >
               <TextField
                 margin="normal"
                 required
@@ -59,9 +74,17 @@ export default function LoginPage() {
               />
               <LoginButton isLoading={isLoading} />
             </Box>
+            <Box sx={{ mt: 2, textAlign: "center" }}>
+              <Typography variant="body2">
+                Don't have an account?{" "}
+                <Button onClick={() => navigate("/signup")} variant="text">
+                  Sign Up
+                </Button>
+              </Typography>
+            </Box>
           </Paper>
         </Box>
       </Container>
     </ThemeProvider>
-  )
+  );
 }
