@@ -1,5 +1,5 @@
-// components/NeighborhoodPicker.tsx
-import React, { useState, useEffect } from "react";
+// src/components/NeighborhoodPicker.tsx
+import React, { useState } from "react";
 import {
   Autocomplete,
   TextField,
@@ -7,16 +7,10 @@ import {
   CircularProgress,
   Typography,
 } from "@mui/material";
-import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Circle,
-  useMap,
-  useMapEvents,
-} from "react-leaflet";
-import "leaflet/dist/leaflet.css";
 
+/**
+ * Nominatim result type
+ */
 interface Suggestion {
   lat: string;
   lon: string;
@@ -26,8 +20,8 @@ interface Suggestion {
 
 interface NeighborhoodPickerProps {
   value: string;
-  latitude: number;
-  longitude: number;
+  latitude?: number; // optional if you want
+  longitude?: number; // optional if you want
   onChange: (
     neighborhood: string,
     coords: { lat: number; lng: number }
@@ -36,6 +30,9 @@ interface NeighborhoodPickerProps {
 
 const allowedTypes = ["city", "town", "village", "neighbourhood", "suburb"];
 
+/**
+ * Debounce helper
+ */
 function debounce<T extends (...args: any[]) => void>(fn: T, delay: number) {
   let timeout: ReturnType<typeof setTimeout>;
   return (...args: Parameters<T>) => {
@@ -44,79 +41,19 @@ function debounce<T extends (...args: any[]) => void>(fn: T, delay: number) {
   };
 }
 
-const Recenter: React.FC<{ center: [number, number] }> = ({ center }) => {
-  const map = useMap();
-  useEffect(() => {
-    map.setView(center, 15);
-  }, [center, map]);
-  return null;
-};
-
-const MapClickHandler: React.FC<{
-  onChange: NeighborhoodPickerProps["onChange"];
-}> = ({ onChange }) => {
-  useMapEvents({
-    click(e) {
-      const { lat, lng } = e.latlng;
-      // Reverse geocode the clicked point
-      (async () => {
-        try {
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`
-          );
-          const data = await res.json();
-          const display_name = data.display_name || "Selected Location";
-          onChange(display_name, { lat, lng });
-        } catch (error) {
-          onChange("Selected Location", { lat, lng });
-        }
-      })();
-    },
-  });
-  return null;
-};
-
+/**
+ * NeighborhoodPicker
+ * Provides an autocomplete for searching city/neighborhood via Nominatim.
+ */
 const NeighborhoodPicker: React.FC<NeighborhoodPickerProps> = ({
   value,
-  latitude,
-  longitude,
   onChange,
 }) => {
   const [inputValue, setInputValue] = useState<string>(value);
   const [options, setOptions] = useState<Suggestion[]>([]);
-  const [center, setCenter] = useState<[number, number]>([latitude, longitude]);
   const [loading, setLoading] = useState<boolean>(false);
 
-  // On mount, attempt to use current location; fallback if denied.
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const lat = position.coords.latitude;
-          const lng = position.coords.longitude;
-          setCenter([lat, lng]);
-          onChange("Current Location", { lat, lng });
-          setInputValue("Current Location");
-        },
-        () => {
-          setCenter([latitude, longitude]);
-          onChange("Northeastern University, Boston", {
-            lat: latitude,
-            lng: longitude,
-          });
-          setInputValue("Northeastern University, Boston");
-        }
-      );
-    } else {
-      setCenter([latitude, longitude]);
-      onChange("Northeastern University, Boston", {
-        lat: latitude,
-        lng: longitude,
-      });
-      setInputValue("Northeastern University, Boston");
-    }
-  }, [latitude, longitude, onChange]);
-
+  // Query Nominatim for address suggestions
   const fetchSuggestions = async (query: string) => {
     if (!query) {
       setOptions([]);
@@ -130,7 +67,6 @@ const NeighborhoodPicker: React.FC<NeighborhoodPickerProps> = ({
         )}&format=json&addressdetails=1`
       );
       const data: Suggestion[] = await res.json();
-      // Only keep results with allowed types.
       const filtered = data.filter((item) => allowedTypes.includes(item.type));
       setOptions(filtered);
     } catch (error) {
@@ -157,7 +93,6 @@ const NeighborhoodPicker: React.FC<NeighborhoodPickerProps> = ({
     if (newValue) {
       const lat = parseFloat(newValue.lat);
       const lng = parseFloat(newValue.lon);
-      setCenter([lat, lng]);
       onChange(newValue.display_name, { lat, lng });
       setInputValue(newValue.display_name);
     }
@@ -178,7 +113,7 @@ const NeighborhoodPicker: React.FC<NeighborhoodPickerProps> = ({
         renderInput={(params) => (
           <TextField
             {...params}
-            label="Search Neighborhood/City"
+            label="Neighborhood/City"
             variant="outlined"
             onKeyDown={(e) => {
               if (e.key === "Enter") e.preventDefault();
@@ -198,22 +133,6 @@ const NeighborhoodPicker: React.FC<NeighborhoodPickerProps> = ({
       <Typography variant="subtitle1" sx={{ mt: 1 }}>
         Selected: {value}
       </Typography>
-      <Box sx={{ mt: 2 }}>
-        <MapContainer
-          center={center}
-          zoom={15}
-          style={{ height: 300, width: "100%" }}
-        >
-          <Recenter center={center} />
-          <TileLayer
-            attribution="&copy; OpenStreetMap contributors"
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          <Marker position={center} />
-          <Circle center={center} radius={500} />
-          <MapClickHandler onChange={onChange} />
-        </MapContainer>
-      </Box>
     </Box>
   );
 };

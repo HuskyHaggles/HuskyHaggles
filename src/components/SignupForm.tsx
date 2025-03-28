@@ -14,16 +14,21 @@ import {
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import SignUpButton from "./buttons/SignUpButton";
+import SignUpButton from "./SignUpButton";
 import { useNavigate } from "react-router-dom";
 
 const theme = createTheme();
 
+/**
+ * SignupForm
+ * Renders a registration UI. In a real app, connect to your backend for signups.
+ */
 export default function SignupForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const navigate = useNavigate();
 
   const handleClickShowPassword = () => {
@@ -44,7 +49,7 @@ export default function SignupForm() {
     const password = data.get("password") as string;
     const confirmPassword = data.get("confirmPassword") as string;
 
-    let validationErrors: string[] = [];
+    const validationErrors: string[] = [];
 
     if (!firstName) validationErrors.push("First Name is required.");
     if (!lastName) validationErrors.push("Last Name is required.");
@@ -54,13 +59,15 @@ export default function SignupForm() {
     if (!confirmPassword)
       validationErrors.push("Confirm password is required.");
 
-    // Additional validations can be added here.
+    // Additional validations can go here:
+    // e.g. password length, email format, etc.
 
     if (validationErrors.length > 0) {
       setErrors(validationErrors);
       return;
     }
 
+    // If no errors, proceed
     setErrors([]);
     setIsLoading(true);
 
@@ -74,7 +81,7 @@ export default function SignupForm() {
       profilePicture: data.get("profilePicture"),
     });
 
-    // Simulate sign up delay
+    // Simulate sign-up delay
     await new Promise((resolve) => setTimeout(resolve, 2000));
     setIsLoading(false);
   };
@@ -94,6 +101,7 @@ export default function SignupForm() {
             <Typography component="h1" variant="h5" align="center">
               Sign Up
             </Typography>
+
             {errors.length > 0 && (
               <Box sx={{ mt: 2, width: "100%" }}>
                 <Alert severity="error">
@@ -105,6 +113,7 @@ export default function SignupForm() {
                 </Alert>
               </Box>
             )}
+
             <Box
               component="form"
               onSubmit={handleSubmit}
@@ -131,6 +140,7 @@ export default function SignupForm() {
                   autoComplete="family-name"
                 />
               </Box>
+
               <TextField
                 margin="normal"
                 required
@@ -139,6 +149,7 @@ export default function SignupForm() {
                 label="Username"
                 name="username"
               />
+
               <TextField
                 margin="normal"
                 required
@@ -148,6 +159,7 @@ export default function SignupForm() {
                 name="email"
                 autoComplete="email"
               />
+
               <TextField
                 margin="normal"
                 required
@@ -167,6 +179,7 @@ export default function SignupForm() {
                   ),
                 }}
               />
+
               <TextField
                 margin="normal"
                 required
@@ -193,6 +206,7 @@ export default function SignupForm() {
                   ),
                 }}
               />
+
               <Box sx={{ mt: 2 }}>
                 <Button variant="contained" component="label" fullWidth>
                   Upload profile picture (optional)
@@ -204,8 +218,10 @@ export default function SignupForm() {
                   />
                 </Button>
               </Box>
+
               <SignUpButton isLoading={isLoading} />
             </Box>
+
             <Box sx={{ mt: 2, textAlign: "center" }}>
               <Typography variant="body2">
                 Already have an account?{" "}

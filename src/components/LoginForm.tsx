@@ -9,11 +9,18 @@ import {
   Button,
 } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
-import LoginButton from "./buttons/LoginButton";
+import LoginButton from "./LoginButton";
 import { useNavigate } from "react-router-dom";
 
+/**
+ * A simple MUI theme. Customize as needed.
+ */
 const theme = createTheme();
 
+/**
+ * LoginForm
+ * Renders a login UI. For an actual app, integrate real auth logic here.
+ */
 export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -21,13 +28,16 @@ export default function LoginForm() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
+
     const data = new FormData(event.currentTarget);
     console.log({
       email: data.get("email"),
       password: data.get("password"),
     });
+
     // Simulate authentication delay
     await new Promise((resolve) => setTimeout(resolve, 2000));
+
     setIsLoading(false);
   };
 
@@ -46,6 +56,7 @@ export default function LoginForm() {
             <Typography component="h1" variant="h5" align="center">
               Log in
             </Typography>
+
             <Box
               component="form"
               onSubmit={handleSubmit}
@@ -62,6 +73,7 @@ export default function LoginForm() {
                 autoComplete="email"
                 autoFocus
               />
+
               <TextField
                 margin="normal"
                 required
@@ -72,11 +84,13 @@ export default function LoginForm() {
                 id="password"
                 autoComplete="current-password"
               />
+
               <LoginButton isLoading={isLoading} />
             </Box>
+
             <Box sx={{ mt: 2, textAlign: "center" }}>
               <Typography variant="body2">
-                Don't have an account?{" "}
+                Don&apos;t have an account?{" "}
                 <Button onClick={() => navigate("/signup")} variant="text">
                   Sign Up
                 </Button>

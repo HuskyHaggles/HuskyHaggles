@@ -1,10 +1,7 @@
 /* src/App.css */
 
-/* Remove or comment out custom CSS if not necessary */
+/* Example fade-in animation. Retain or remove as you wish. */
 
-/* Example: If you have animations or custom styles, define them using Tailwind's utility classes or extend the Tailwind configuration */
-
-/* Fade-in Animation */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -19,3 +16,5 @@
 .animate-fadeIn {
   animation: fadeIn 0.5s ease-in-out;
 }
+
+/* You can add any global custom CSS here. */

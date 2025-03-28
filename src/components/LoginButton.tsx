@@ -1,9 +1,15 @@
+// src/components/LoginButton.tsx
+import React from "react";
 import { Button } from "@mui/material";
 
 interface LoginButtonProps {
   isLoading?: boolean;
 }
 
+/**
+ * LoginButton
+ * A specialized button for logging in, disabled when loading.
+ */
 export default function LoginButton({ isLoading = false }: LoginButtonProps) {
   return (
     <Button

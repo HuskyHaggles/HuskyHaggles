@@ -1,3 +1,4 @@
+// src/components/ListingCard.tsx
 import React from "react";
 import {
   Card,
@@ -29,9 +30,18 @@ interface ListingCardProps {
   listing: Listing;
 }
 
+/**
+ * ListingCard
+ * Renders a single listing item with an image, name, price, and seller info.
+ */
 const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
   const navigate = useNavigate();
 
+  /**
+   * On card click:
+   * - If listing has a user with a username, go to /u/<username>/<listingId>
+   * - Otherwise, go to /listing/<listingId>
+   */
   const handleCardClick = () => {
     if (listing.users?.username) {
       navigate(`/u/${listing.users.username}/${listing.id}`);
@@ -40,6 +50,9 @@ const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
     }
   };
 
+  /**
+   * On seller username click, stop event propagation and go to user’s page.
+   */
   const handleUsernameClick = (
     e: React.MouseEvent<HTMLSpanElement, MouseEvent>
   ) => {
@@ -75,6 +88,7 @@ const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
             }}
           />
         )}
+
         <CardContent>
           <Typography variant="h6" gutterBottom>
             {listing.name}
@@ -93,21 +107,24 @@ const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
               Posted on: {new Date(listing.created_at).toLocaleString()}
             </Typography>
           )}
-          <Typography variant="caption" color="text.secondary">
-            Seller: {listing.users?.firstName} {listing.users?.lastName} (
-            <Box
-              component="span"
-              sx={{
-                color: "primary.main",
-                cursor: "pointer",
-                textDecoration: "underline",
-              }}
-              onClick={handleUsernameClick}
-            >
-              @{listing.users?.username}
-            </Box>
-            )
-          </Typography>
+
+          {listing.users && (
+            <Typography variant="caption" color="text.secondary">
+              Seller: {listing.users.firstName} {listing.users.lastName} (
+              <Box
+                component="span"
+                sx={{
+                  color: "primary.main",
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                }}
+                onClick={handleUsernameClick}
+              >
+                @{listing.users.username}
+              </Box>
+              )
+            </Typography>
+          )}
         </CardContent>
       </CardActionArea>
     </Card>

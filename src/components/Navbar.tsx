@@ -1,3 +1,4 @@
+// src/components/Navbar.tsx
 import React, { useState, useEffect } from "react";
 import {
   AppBar,
@@ -16,11 +17,16 @@ import {
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 
+/**
+ * Navbar
+ * Displays the top navigation bar with links to Home, Listings, Users, etc.
+ */
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   const [user, setUser] = useState<any>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -39,13 +45,15 @@ const Navbar: React.FC = () => {
     if (isMobile) setDrawerOpen(false);
   };
 
-  // Define navItems with updated labels and paths.
+  // Navigation items
   const navItems = [
     { label: "Browse Listings", path: "/listings" },
     { label: "View Users", path: "/users" },
+    // If user is logged in, go to /add_listing, otherwise /login
     { label: "Add Listing", path: user ? "/add_listing" : "/login" },
   ];
 
+  // Auth items
   const authItems = user
     ? [
         {
@@ -58,18 +66,22 @@ const Navbar: React.FC = () => {
         { label: "Sign Up", path: "/signup" },
       ];
 
-  // For the Add Listing button, only highlight when on exactly /add_listing.
+  /**
+   * Determine if a button is "active".
+   * For "Add Listing", only highlight on /add_listing specifically.
+   */
   const getButtonSx = (itemPath: string, label: string) => {
     const isActive =
       label === "Add Listing"
         ? location.pathname === "/add_listing"
         : location.pathname.startsWith(itemPath);
+
     return {
       transition: "transform 0.2s, background-color 0.2s",
       backgroundColor: isActive ? "rgba(0, 0, 0, 0.3)" : "transparent",
       "&:hover": {
         transform: "scale(1.1)",
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        backgroundColor: "rgba(0,0,0,0.5)",
       },
     };
   };
@@ -95,6 +107,8 @@ const Navbar: React.FC = () => {
           >
             Husky Haggles
           </Typography>
+
+          {/* Right side navigation buttons */}
           <Box sx={{ display: "flex", gap: 2, ml: "auto" }}>
             {[...navItems, ...authItems].map((item, index) => (
               <Button
@@ -110,6 +124,7 @@ const Navbar: React.FC = () => {
         </Toolbar>
       </AppBar>
 
+      {/* Optional Drawer for Mobile (if you want a hamburger menu, etc.) */}
       <Drawer
         anchor="right"
         open={drawerOpen}

@@ -1,3 +1,4 @@
+// src/components/UserCard.tsx
 import React from "react";
 import {
   Card,
@@ -20,6 +21,10 @@ interface UserCardProps {
   user: User;
 }
 
+/**
+ * UserCard
+ * Renders basic info about a user, linking to their profile on click.
+ */
 const UserCard: React.FC<UserCardProps> = ({ user }) => {
   const navigate = useNavigate();
 
@@ -59,7 +64,7 @@ const UserCard: React.FC<UserCardProps> = ({ user }) => {
           sx={{
             width: 120,
             height: 120,
-            borderRadius: "8px", // Rounded square shape
+            borderRadius: "8px",
             objectFit: "cover",
             objectPosition: "center",
             mb: 1,

@@ -1,17 +1,18 @@
-// pages/Listings.tsx
+// src/pages/Listings.tsx
 import React, { useEffect, useState } from "react";
-import { Container, Typography, Box, Grid } from "@mui/material";
-import { Helmet } from "react-helmet";
+import { Container, Typography, Box } from "@mui/material";
+import ListingsGrid from "../components/ListingsGrid";
 import ListingsFilter, { FilterValues } from "../components/ListingsFilter";
 import { supabase } from "../supabaseClient";
-import { useNavigate } from "react-router-dom";
-import ListingCard from "../components/ListingCard";
 
+/**
+ * Listings Page
+ * Shows a filter sidebar and a grid of listings.
+ */
 const Listings: React.FC = () => {
-  const navigate = useNavigate();
   const [filters, setFilters] = useState<FilterValues>({
     searchTerm: "",
-    inStockOnly: false,
+    inStockOnly: true,
     soldOnly: false,
     dateFrom: "",
     dateTo: "",
@@ -20,22 +21,32 @@ const Listings: React.FC = () => {
     condition: "",
     minPrice: null,
     maxPrice: null,
-    sortBy: "date_desc", // Default newest first
+    sortBy: "date_desc",
   });
   const [listings, setListings] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
+  useEffect(() => {
+    document.title = "Browse Listings - Husky Haggles";
+  }, []);
+
+  /**
+   * Fetch the listings from Supabase, apply filters, then sort locally.
+   */
   const fetchListings = async () => {
     setLoading(true);
+
     let query = supabase.from("listings").select(`
-        id, 
-        name, 
-        images, 
-        price, 
-        created_at,
-        user_id,
-        users ( firstName, lastName, username, profile_picture )
-      `);
+      id,
+      name,
+      images,
+      price,
+      created_at,
+      user_id,
+      users ( firstName, lastName, username, profile_picture )
+    `);
+
+    // Apply filters
     if (filters.searchTerm)
       query = query.ilike("name", `%${filters.searchTerm}%`);
     if (filters.inStockOnly) query = query.eq("in_stock", true);
@@ -56,20 +67,30 @@ const Listings: React.FC = () => {
       console.error("Error fetching listings:", error);
     } else {
       let sortedData = data || [];
-      if (filters.sortBy === "date_desc") {
-        sortedData = sortedData.sort(
-          (a, b) =>
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
-      } else if (filters.sortBy === "date_asc") {
-        sortedData = sortedData.sort(
-          (a, b) =>
-            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-        );
-      } else if (filters.sortBy === "price_asc") {
-        sortedData = sortedData.sort((a, b) => a.price - b.price);
-      } else if (filters.sortBy === "price_desc") {
-        sortedData = sortedData.sort((a, b) => b.price - a.price);
+      switch (filters.sortBy) {
+        case "date_desc":
+          sortedData.sort(
+            (a, b) =>
+              new Date(b.created_at).getTime() -
+              new Date(a.created_at).getTime()
+          );
+          break;
+        case "date_asc":
+          sortedData.sort(
+            (a, b) =>
+              new Date(a.created_at).getTime() -
+              new Date(b.created_at).getTime()
+          );
+          break;
+        case "price_asc":
+          sortedData.sort((a, b) => a.price - b.price);
+          break;
+        case "price_desc":
+          sortedData.sort((a, b) => b.price - a.price);
+          break;
+        default:
+          // no-op
+          break;
       }
       setListings(sortedData);
     }
@@ -78,37 +99,31 @@ const Listings: React.FC = () => {
 
   useEffect(() => {
     fetchListings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
   return (
-    <>
-      <Helmet>
-        <title>Browse Listings - Husky Haggles</title>
-      </Helmet>
-      <Container sx={{ mt: 4 }}>
-        <Typography variant="h3" sx={{ mb: 2, textAlign: "center" }}>
-          Browse Listings
-        </Typography>
-        <Box sx={{ display: "flex", gap: 2 }}>
-          <Box sx={{ width: { xs: "100%", md: "300px" } }}>
-            <ListingsFilter onFilterChange={setFilters} />
-          </Box>
-          <Box sx={{ flexGrow: 1 }}>
-            {loading ? (
-              <Typography>Loading listings...</Typography>
-            ) : (
-              <Grid container spacing={2}>
-                {listings.map((listing) => (
-                  <Grid item xs={12} sm={6} md={4} key={listing.id}>
-                    <ListingCard listing={listing} />
-                  </Grid>
-                ))}
-              </Grid>
-            )}
-          </Box>
+    <Container sx={{ mt: 4 }}>
+      <Typography variant="h3" sx={{ mb: 2, textAlign: "center" }}>
+        Browse Listings
+      </Typography>
+
+      <Box sx={{ display: "flex", gap: 2 }}>
+        {/* Filter column */}
+        <Box sx={{ width: { xs: "100%", md: "300px" } }}>
+          <ListingsFilter onFilterChange={setFilters} />
         </Box>
-      </Container>
-    </>
+
+        {/* Listings column */}
+        <Box sx={{ flexGrow: 1 }}>
+          {loading ? (
+            <Typography>Loading listings...</Typography>
+          ) : (
+            <ListingsGrid listings={listings} />
+          )}
+        </Box>
+      </Box>
+    </Container>
   );
 };
 

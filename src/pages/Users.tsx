@@ -1,18 +1,21 @@
+// src/pages/Users.tsx
 import React, { useEffect, useState } from "react";
 import {
   Container,
   Typography,
-  Grid,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
 } from "@mui/material";
-import { Helmet } from "react-helmet";
-import UserCard from "../components/UserCard";
+import UsersGrid from "../components/UsersGrid";
 import { supabase } from "../supabaseClient";
 import { SelectChangeEvent } from "@mui/material/Select";
 
+/**
+ * User
+ * Basic structure for a user object from Supabase.
+ */
 interface User {
   id: string;
   username: string;
@@ -22,10 +25,18 @@ interface User {
   created_at: string;
 }
 
+/**
+ * Users Page
+ * Shows a list of all users, with options to sort by creation date or name.
+ */
 const Users: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [sortBy, setSortBy] = useState<string>("created_desc");
+
+  useEffect(() => {
+    document.title = "Users - Husky Haggles";
+  }, []);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -46,42 +57,39 @@ const Users: React.FC = () => {
     fetchUsers();
   }, []);
 
-  const handleSortChange = (
-    e: SelectChangeEvent<string>,
-    child: React.ReactNode
-  ) => {
+  const handleSortChange = (e: SelectChangeEvent<string>) => {
     setSortBy(e.target.value);
   };
 
   const sortedUsers = [...users].sort((a, b) => {
-    if (sortBy === "created_desc") {
-      return (
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
-    } else if (sortBy === "created_asc") {
-      return (
-        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-      );
-    } else if (sortBy === "firstName_asc") {
-      return a.firstName.localeCompare(b.firstName);
-    } else if (sortBy === "firstName_desc") {
-      return b.firstName.localeCompare(a.firstName);
-    } else if (sortBy === "lastName_asc") {
-      return a.lastName.localeCompare(b.lastName);
-    } else if (sortBy === "lastName_desc") {
-      return b.lastName.localeCompare(a.lastName);
+    switch (sortBy) {
+      case "created_desc":
+        return (
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+      case "created_asc":
+        return (
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        );
+      case "firstName_asc":
+        return a.firstName.localeCompare(b.firstName);
+      case "firstName_desc":
+        return b.firstName.localeCompare(a.firstName);
+      case "lastName_asc":
+        return a.lastName.localeCompare(b.lastName);
+      case "lastName_desc":
+        return b.lastName.localeCompare(a.lastName);
+      default:
+        return 0;
     }
-    return 0;
   });
 
   return (
     <Container sx={{ mt: 4 }}>
-      <Helmet>
-        <title>Users - Husky Haggles</title>
-      </Helmet>
       <Typography variant="h4" gutterBottom>
         Users
       </Typography>
+
       <FormControl sx={{ minWidth: 200, mb: 2 }}>
         <InputLabel>Sort Users</InputLabel>
         <Select
@@ -98,16 +106,11 @@ const Users: React.FC = () => {
           <MenuItem value="lastName_desc">Last Name (Z-A)</MenuItem>
         </Select>
       </FormControl>
+
       {loading ? (
         <Typography>Loading users...</Typography>
       ) : sortedUsers.length > 0 ? (
-        <Grid container spacing={2}>
-          {sortedUsers.map((user) => (
-            <Grid item key={user.id} xs={6} sm={4} md={3}>
-              <UserCard user={user} />
-            </Grid>
-          ))}
-        </Grid>
+        <UsersGrid users={sortedUsers} />
       ) : (
         <Typography>No users found.</Typography>
       )}

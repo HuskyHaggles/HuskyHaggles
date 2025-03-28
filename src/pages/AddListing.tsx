@@ -1,4 +1,4 @@
-// pages/AddListing.tsx
+// src/pages/AddListing.tsx
 import React, { useState, useEffect, Suspense } from "react";
 import {
   Button,
@@ -9,21 +9,25 @@ import {
   InputAdornment,
   TextField,
 } from "@mui/material";
-import { Helmet } from "react-helmet";
 import NeighborhoodPicker from "../components/NeighborhoodPicker";
 import { supabase } from "../supabaseClient";
 import { generateListingId } from "../utils/generateListingId";
 
-// Dynamically import react-quill-new
+/**
+ * Dynamically import react-quill-new for the text editor.
+ */
 const ReactQuill = React.lazy(() => import("react-quill-new"));
 import "react-quill-new/dist/quill.snow.css";
 
+/**
+ * AddListing Page
+ * Allows a user to create a new listing.
+ */
 const AddListing: React.FC = () => {
-  // Delay rendering of the editor until after mount.
   const [isMounted, setIsMounted] = useState(false);
   const [name, setName] = useState("");
   const [content, setContent] = useState("<p></p>");
-  const [inStock, setInStock] = useState(true);
+  const [inStock] = useState(true); // defaults to true
   const [imageUrl, setImageUrl] = useState("");
   const [price, setPrice] = useState("");
   const [condition, setCondition] = useState("");
@@ -35,6 +39,7 @@ const AddListing: React.FC = () => {
 
   useEffect(() => {
     setIsMounted(true);
+    document.title = "Add Listing - Husky Haggles";
   }, []);
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -63,10 +68,7 @@ const AddListing: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="lg">
-      <Helmet>
-        <title>Add Listing - Husky Haggles</title>
-      </Helmet>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box
         component="form"
         onSubmit={handleSubmit}
@@ -74,12 +76,12 @@ const AddListing: React.FC = () => {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          py: 4,
         }}
       >
         <Typography variant="h4" gutterBottom>
           Add New Listing
         </Typography>
+
         <Grid container spacing={3} sx={{ width: "100%", maxWidth: 900 }}>
           {/* Left Column: Listing Details */}
           <Grid sx={{ width: { xs: "100%", md: "66.66%" } }}>
@@ -91,6 +93,7 @@ const AddListing: React.FC = () => {
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
+
             <Typography fontWeight="bold" mt={2} mb={1}>
               Description:
             </Typography>
@@ -105,6 +108,7 @@ const AddListing: React.FC = () => {
               )}
             </Suspense>
           </Grid>
+
           {/* Right Column: Additional Info */}
           <Grid sx={{ width: { xs: "100%", md: "33.33%" } }}>
             <Typography fontWeight="bold" mb={1}>
@@ -121,6 +125,7 @@ const AddListing: React.FC = () => {
                 ),
               }}
             />
+
             <Typography fontWeight="bold" mt={2} mb={1}>
               Condition:
             </Typography>
@@ -129,6 +134,7 @@ const AddListing: React.FC = () => {
               value={condition}
               onChange={(e) => setCondition(e.target.value)}
             />
+
             <Typography fontWeight="bold" mt={2} mb={1}>
               Category:
             </Typography>
@@ -137,6 +143,7 @@ const AddListing: React.FC = () => {
               value={category}
               onChange={(e) => setCategory(e.target.value)}
             />
+
             <Typography fontWeight="bold" mt={2} mb={1}>
               Location:
             </Typography>
@@ -152,6 +159,7 @@ const AddListing: React.FC = () => {
             />
           </Grid>
         </Grid>
+
         <Box sx={{ mt: 3, textAlign: "center" }}>
           <Button type="submit" variant="contained" color="primary">
             Add Listing

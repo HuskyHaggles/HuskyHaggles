@@ -1,3 +1,4 @@
+// src/components/ListingsFilter.tsx
 import React, { useState } from "react";
 import {
   Box,
@@ -32,10 +33,14 @@ interface ListingsFilterProps {
   onFilterChange: (filters: FilterValues) => void;
 }
 
+/**
+ * ListingsFilter
+ * Renders a filtering UI for searching and sorting listings.
+ */
 const ListingsFilter: React.FC<ListingsFilterProps> = ({ onFilterChange }) => {
   const [filters, setFilters] = useState<FilterValues>({
     searchTerm: "",
-    inStockOnly: true, // Checked by default
+    inStockOnly: true, // default
     soldOnly: false,
     dateFrom: "",
     dateTo: "",
@@ -44,7 +49,7 @@ const ListingsFilter: React.FC<ListingsFilterProps> = ({ onFilterChange }) => {
     condition: "",
     minPrice: null,
     maxPrice: null,
-    sortBy: "date_desc", // Default newest first
+    sortBy: "date_desc", // newest first by default
   });
 
   const handleInputChange = (
@@ -53,37 +58,26 @@ const ListingsFilter: React.FC<ListingsFilterProps> = ({ onFilterChange }) => {
     const { name, value, type } = e.target;
     if (type === "checkbox") {
       const target = e.target as HTMLInputElement;
-      const newValue = target.checked;
+      const newCheckedValue = target.checked;
+
       setFilters((prev) => {
-        const newFilters = {
-          ...prev,
-          [name]: newValue,
-        };
-        // Ensure mutual exclusivity
-        if (name === "inStockOnly" && newValue) {
+        const newFilters = { ...prev, [name]: newCheckedValue };
+        // Ensure mutual exclusivity:
+        if (name === "inStockOnly" && newCheckedValue) {
           newFilters.soldOnly = false;
-        } else if (name === "soldOnly" && newValue) {
+        } else if (name === "soldOnly" && newCheckedValue) {
           newFilters.inStockOnly = false;
         }
         return newFilters;
       });
     } else {
-      setFilters((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
+      setFilters((prev) => ({ ...prev, [name]: value }));
     }
   };
 
-  const handleSelectChange = (
-    e: SelectChangeEvent<string>,
-    child: React.ReactNode
-  ) => {
+  const handleSelectChange = (e: SelectChangeEvent<string>) => {
     const { name, value } = e.target;
-    setFilters((prev) => ({
-      ...prev,
-      [name as string]: value,
-    }));
+    setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleApply = () => {
@@ -102,7 +96,7 @@ const ListingsFilter: React.FC<ListingsFilterProps> = ({ onFilterChange }) => {
       condition: "",
       minPrice: null,
       maxPrice: null,
-      sortBy: "date_desc", // Reset default sort to newest first
+      sortBy: "date_desc",
     };
     setFilters(cleared);
     onFilterChange(cleared);
@@ -122,6 +116,7 @@ const ListingsFilter: React.FC<ListingsFilterProps> = ({ onFilterChange }) => {
           onChange={handleInputChange}
           fullWidth
         />
+
         <FormControlLabel
           control={
             <Checkbox
@@ -132,6 +127,7 @@ const ListingsFilter: React.FC<ListingsFilterProps> = ({ onFilterChange }) => {
           }
           label="In Stock Only"
         />
+
         <FormControlLabel
           control={
             <Checkbox
@@ -142,6 +138,7 @@ const ListingsFilter: React.FC<ListingsFilterProps> = ({ onFilterChange }) => {
           }
           label="Sold Only"
         />
+
         <TextField
           name="dateFrom"
           label="Date From"
@@ -150,6 +147,7 @@ const ListingsFilter: React.FC<ListingsFilterProps> = ({ onFilterChange }) => {
           onChange={handleInputChange}
           InputLabelProps={{ shrink: true }}
         />
+
         <TextField
           name="dateTo"
           label="Date To"
@@ -158,6 +156,7 @@ const ListingsFilter: React.FC<ListingsFilterProps> = ({ onFilterChange }) => {
           onChange={handleInputChange}
           InputLabelProps={{ shrink: true }}
         />
+
         <FormControl fullWidth>
           <InputLabel>Category</InputLabel>
           <Select
@@ -175,6 +174,7 @@ const ListingsFilter: React.FC<ListingsFilterProps> = ({ onFilterChange }) => {
             <MenuItem value="Clothing">Clothing</MenuItem>
           </Select>
         </FormControl>
+
         <TextField
           name="minPrice"
           label="Minimum Price"
@@ -184,6 +184,7 @@ const ListingsFilter: React.FC<ListingsFilterProps> = ({ onFilterChange }) => {
           onChange={handleInputChange}
           fullWidth
         />
+
         <TextField
           name="maxPrice"
           label="Maximum Price"
@@ -193,6 +194,7 @@ const ListingsFilter: React.FC<ListingsFilterProps> = ({ onFilterChange }) => {
           onChange={handleInputChange}
           fullWidth
         />
+
         <FormControl fullWidth>
           <InputLabel>Sort By</InputLabel>
           <Select
@@ -201,15 +203,13 @@ const ListingsFilter: React.FC<ListingsFilterProps> = ({ onFilterChange }) => {
             onChange={handleSelectChange}
             label="Sort By"
           >
-            <MenuItem value="">
-              <em>None</em>
-            </MenuItem>
             <MenuItem value="date_desc">Date Posted (Newest First)</MenuItem>
             <MenuItem value="date_asc">Date Posted (Oldest First)</MenuItem>
             <MenuItem value="price_asc">Price (Low to High)</MenuItem>
             <MenuItem value="price_desc">Price (High to Low)</MenuItem>
           </Select>
         </FormControl>
+
         <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end" }}>
           <Button variant="outlined" onClick={handleClear}>
             Clear
