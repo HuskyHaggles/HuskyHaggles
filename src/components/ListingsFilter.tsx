@@ -44,7 +44,7 @@ const ListingsFilter: React.FC<ListingsFilterProps> = ({ onFilterChange }) => {
     condition: "",
     minPrice: null,
     maxPrice: null,
-    sortBy: "",
+    sortBy: "date_desc", // Default newest first
   });
 
   const handleInputChange = (
@@ -102,7 +102,7 @@ const ListingsFilter: React.FC<ListingsFilterProps> = ({ onFilterChange }) => {
       condition: "",
       minPrice: null,
       maxPrice: null,
-      sortBy: "",
+      sortBy: "date_desc", // Reset default sort to newest first
     };
     setFilters(cleared);
     onFilterChange(cleared);
@@ -173,7 +173,6 @@ const ListingsFilter: React.FC<ListingsFilterProps> = ({ onFilterChange }) => {
             <MenuItem value="Furniture">Furniture</MenuItem>
             <MenuItem value="Books">Books</MenuItem>
             <MenuItem value="Clothing">Clothing</MenuItem>
-            {/* Add more categories or fetch from a categories table */}
           </Select>
         </FormControl>
         <TextField

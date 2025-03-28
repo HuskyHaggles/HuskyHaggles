@@ -1,16 +1,20 @@
-import React, { useEffect, useState } from "react";
+// pages/UserDetails.tsx
+import React, { useState, useEffect } from "react";
 import {
-  Container,
-  Typography,
   Box,
   Grid,
-  Paper,
-  CardMedia,
+  Typography,
   Button,
+  Paper,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Container,
 } from "@mui/material";
+import { Helmet } from "react-helmet";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
-import { Helmet } from "react-helmet";
 
 interface User {
   id: string;
@@ -27,6 +31,7 @@ interface Listing {
   name: string;
   images: string[];
   price?: number;
+  created_at?: string;
 }
 
 const obfuscateEmail = (email: string) =>
@@ -37,6 +42,7 @@ const UserDetails: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [sortBy, setSortBy] = useState<string>("date_desc");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -63,17 +69,35 @@ const UserDetails: React.FC = () => {
       if (!user) return;
       const { data, error } = await supabase
         .from("listings")
-        .select("id, name, images, price")
+        .select("id, name, images, price, created_at")
         .eq("user_id", user.id);
       if (error) {
         console.error("Error fetching user listings:", error.message);
       } else {
-        setListings(data || []);
+        let sorted = data || [];
+        if (sortBy === "date_desc") {
+          sorted = sorted.sort(
+            (a, b) =>
+              new Date(b.created_at).getTime() -
+              new Date(a.created_at).getTime()
+          );
+        } else if (sortBy === "date_asc") {
+          sorted = sorted.sort(
+            (a, b) =>
+              new Date(a.created_at).getTime() -
+              new Date(b.created_at).getTime()
+          );
+        } else if (sortBy === "price_asc") {
+          sorted = sorted.sort((a, b) => a.price - b.price);
+        } else if (sortBy === "price_desc") {
+          sorted = sorted.sort((a, b) => b.price - a.price);
+        }
+        setListings(sorted);
       }
       setLoading(false);
     };
     fetchUserListings();
-  }, [user]);
+  }, [user, sortBy]);
 
   return (
     <>
@@ -120,9 +144,29 @@ const UserDetails: React.FC = () => {
             >
               Back to Users
             </Button>
-            <Typography variant="h5" sx={{ mb: 2 }}>
-              {user.firstName}'s Listings
-            </Typography>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                mb: 2,
+              }}
+            >
+              <Typography variant="h5">{user.firstName}'s Listings</Typography>
+              <FormControl sx={{ minWidth: 150 }}>
+                <InputLabel>Sort By</InputLabel>
+                <Select
+                  label="Sort By"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                >
+                  <MenuItem value="date_desc">Newest First</MenuItem>
+                  <MenuItem value="date_asc">Oldest First</MenuItem>
+                  <MenuItem value="price_asc">Price (Low to High)</MenuItem>
+                  <MenuItem value="price_desc">Price (High to Low)</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
             {loading ? (
               <Typography>Loading listings...</Typography>
             ) : (
@@ -136,11 +180,12 @@ const UserDetails: React.FC = () => {
                       }
                     >
                       {listing.images?.length > 0 ? (
-                        <CardMedia
+                        <Box
                           component="img"
-                          image={listing.images[0]}
+                          src={listing.images[0]}
                           alt={listing.name}
                           sx={{
+                            width: "100%",
                             height: 150,
                             objectFit: "cover",
                             objectPosition: "center",
@@ -148,17 +193,19 @@ const UserDetails: React.FC = () => {
                           }}
                         />
                       ) : (
-                        <CardMedia
-                          component="img"
-                          image="https://via.placeholder.com/300x150?text=No+Image"
-                          alt="No Image Available"
+                        <Box
                           sx={{
+                            width: "100%",
                             height: 150,
-                            objectFit: "cover",
-                            objectPosition: "center",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            bgcolor: "grey.200",
                             mb: 1,
                           }}
-                        />
+                        >
+                          <Typography>No Image</Typography>
+                        </Box>
                       )}
                       <Typography variant="h6">{listing.name}</Typography>
                       {listing.price && (

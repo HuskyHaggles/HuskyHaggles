@@ -1,11 +1,9 @@
+// pages/ListingDetails.tsx
 import React, { useState, useEffect } from "react";
 import {
   Container,
   Typography,
   Card,
-  CardMedia,
-  CardContent,
-  Grid,
   Box,
   Divider,
   Button,
@@ -27,7 +25,7 @@ interface User {
 interface Listing {
   id: string;
   name: string;
-  description: string;
+  description: string; // rich HTML stored in Supabase
   images: string[];
   price?: number;
   category?: string;
@@ -60,7 +58,6 @@ const ListingDetails: React.FC = () => {
         )
         .eq("id", listing_id)
         .single();
-
       if (error) {
         console.error("Error fetching listing:", error.message);
       } else {
@@ -75,7 +72,6 @@ const ListingDetails: React.FC = () => {
       }
       setLoading(false);
     };
-
     fetchListing();
   }, [listing_id]);
 
@@ -103,72 +99,117 @@ const ListingDetails: React.FC = () => {
       <Helmet>
         <title>{listing.name} - Husky Haggles</title>
       </Helmet>
-      <Container sx={{ mt: 4 }}>
+      <Container sx={{ mt: 4, mb: 4 }}>
         <Card sx={{ p: 3 }}>
-          <Grid container spacing={2}>
-            {/* Left Column: Image Carousel, Title locked below image, Description */}
-            <Grid item xs={12} md={6}>
-              <Box sx={{ position: "relative" }}>
+          {/* Main flex container */}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", md: "row" },
+              gap: 2,
+            }}
+          >
+            {/* Left Side: Image and below it title + rich description */}
+            <Box sx={{ flex: 1 }}>
+              {/* Image Container with 4:3 Aspect Ratio */}
+              <Box
+                sx={{
+                  position: "relative",
+                  width: "100%",
+                  paddingBottom: "75%", // 4:3 ratio
+                  bgcolor: "grey.200",
+                  overflow: "hidden",
+                }}
+              >
                 {listing.images && listing.images.length > 0 ? (
-                  <CardMedia
-                    component="img"
-                    height="300"
-                    image={listing.images[currentImageIndex]}
-                    alt={`${listing.name} - image ${currentImageIndex + 1}`}
-                    sx={{
-                      width: "100%",
-                      objectFit: "cover",
-                      objectPosition: "center",
-                      mb: 2,
-                    }}
-                  />
-                ) : (
-                  <Typography>No images available.</Typography>
-                )}
-                {listing.images && listing.images.length > 1 && (
                   <>
-                    <IconButton
+                    <Box
+                      component="img"
+                      src={listing.images[currentImageIndex]}
+                      alt={`${listing.name} - image ${currentImageIndex + 1}`}
                       sx={{
                         position: "absolute",
-                        top: "50%",
+                        top: 0,
                         left: 0,
-                        transform: "translateY(-50%)",
-                        backgroundColor: "rgba(0,0,0,0.4)",
-                        color: "#fff",
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        objectPosition: "center",
                       }}
-                      onClick={handlePrevImage}
-                    >
-                      <ArrowBackIosNewIcon />
-                    </IconButton>
-                    <IconButton
-                      sx={{
-                        position: "absolute",
-                        top: "50%",
-                        right: 0,
-                        transform: "translateY(-50%)",
-                        backgroundColor: "rgba(0,0,0,0.4)",
-                        color: "#fff",
-                      }}
-                      onClick={handleNextImage}
-                    >
-                      <ArrowForwardIosIcon />
-                    </IconButton>
+                    />
+                    {listing.images.length > 1 && (
+                      <>
+                        <IconButton
+                          sx={{
+                            position: "absolute",
+                            top: "50%",
+                            left: 0,
+                            transform: "translateY(-50%)",
+                            backgroundColor: "rgba(0,0,0,0.4)",
+                            color: "#fff",
+                            "&:hover": { backgroundColor: "rgba(0,0,0,0.6)" },
+                          }}
+                          onClick={handlePrevImage}
+                        >
+                          <ArrowBackIosNewIcon />
+                        </IconButton>
+                        <IconButton
+                          sx={{
+                            position: "absolute",
+                            top: "50%",
+                            right: 0,
+                            transform: "translateY(-50%)",
+                            backgroundColor: "rgba(0,0,0,0.4)",
+                            color: "#fff",
+                            "&:hover": { backgroundColor: "rgba(0,0,0,0.6)" },
+                          }}
+                          onClick={handleNextImage}
+                        >
+                          <ArrowForwardIosIcon />
+                        </IconButton>
+                      </>
+                    )}
                   </>
+                ) : (
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "grey.600",
+                    }}
+                  >
+                    <Typography>No images available.</Typography>
+                  </Box>
                 )}
               </Box>
-              {/* Title locked a fixed distance below the image */}
-              <Box sx={{ mt: 2, mb: 1 }}>
-                <Typography variant="h4" sx={{ fontWeight: "bold" }}>
+              {/* Title and Rich HTML Description Under the Image */}
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="h4" sx={{ fontWeight: "bold", mb: 1 }}>
                   {listing.name}
                 </Typography>
+                <Typography
+                  variant="body1"
+                  dangerouslySetInnerHTML={{ __html: listing.description }}
+                />
               </Box>
-              <Typography variant="body1" sx={{ mb: 2 }}>
-                {listing.description}
-              </Typography>
-            </Grid>
+            </Box>
 
-            {/* Right Column: Product & Seller Information */}
-            <Grid item xs={12} md={6}>
+            {/* Right Side: Product & Seller Info (Locked to the right) */}
+            <Box
+              sx={{
+                width: { xs: "100%", md: 300 },
+                flexShrink: 0,
+                position: { xs: "static", md: "sticky" },
+                top: 20,
+                height: "fit-content",
+              }}
+            >
               <Box sx={{ p: 2, border: "1px solid #ddd", borderRadius: 2 }}>
                 <Typography variant="h6" gutterBottom>
                   Product Information
@@ -192,9 +233,7 @@ const ListingDetails: React.FC = () => {
                     ? new Date(listing.created_at).toLocaleString()
                     : "N/A"}
                 </Typography>
-
                 <Divider sx={{ my: 2 }} />
-
                 <Typography variant="h6" gutterBottom>
                   Seller Information
                 </Typography>
@@ -232,24 +271,25 @@ const ListingDetails: React.FC = () => {
                     </Typography>
                   </Box>
                 </Box>
-
-                <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
-                  <Button
-                    variant="outlined"
-                    onClick={() => navigate("/listings")}
-                  >
-                    Back to Listings
-                  </Button>
-                  <Button
-                    variant="contained"
-                    onClick={() => navigate(`/u/${listing.users?.username}`)}
-                  >
-                    Get in Contact
-                  </Button>
-                </Box>
               </Box>
-            </Grid>
-          </Grid>
+              <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => navigate("/listings")}
+                >
+                  Back to Listings
+                </Button>
+                <Button
+                  variant="contained"
+                  fullWidth
+                  onClick={() => navigate(`/u/${listing.users?.username}`)}
+                >
+                  Get in Contact
+                </Button>
+              </Box>
+            </Box>
+          </Box>
         </Card>
       </Container>
     </>

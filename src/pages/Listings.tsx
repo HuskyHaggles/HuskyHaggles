@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { Box, Grid, Typography } from "@mui/material";
+// pages/Listings.tsx
+import React, { useEffect, useState } from "react";
+import { Container, Typography, Box, Grid } from "@mui/material";
 import { Helmet } from "react-helmet";
 import ListingsFilter, { FilterValues } from "../components/ListingsFilter";
 import { supabase } from "../supabaseClient";
@@ -35,7 +36,6 @@ const Listings: React.FC = () => {
         user_id,
         users ( firstName, lastName, username, profile_picture )
       `);
-
     if (filters.searchTerm)
       query = query.ilike("name", `%${filters.searchTerm}%`);
     if (filters.inStockOnly) query = query.eq("in_stock", true);
@@ -85,24 +85,29 @@ const Listings: React.FC = () => {
       <Helmet>
         <title>Browse Listings - Husky Haggles</title>
       </Helmet>
-      <Box sx={{ display: "flex", p: 2, gap: 2 }}>
-        <Box sx={{ width: { xs: "100%", md: "300px" } }}>
-          <ListingsFilter onFilterChange={setFilters} />
+      <Container sx={{ mt: 4 }}>
+        <Typography variant="h3" sx={{ mb: 2, textAlign: "center" }}>
+          Browse Listings
+        </Typography>
+        <Box sx={{ display: "flex", gap: 2 }}>
+          <Box sx={{ width: { xs: "100%", md: "300px" } }}>
+            <ListingsFilter onFilterChange={setFilters} />
+          </Box>
+          <Box sx={{ flexGrow: 1 }}>
+            {loading ? (
+              <Typography>Loading listings...</Typography>
+            ) : (
+              <Grid container spacing={2}>
+                {listings.map((listing) => (
+                  <Grid item xs={12} sm={6} md={4} key={listing.id}>
+                    <ListingCard listing={listing} />
+                  </Grid>
+                ))}
+              </Grid>
+            )}
+          </Box>
         </Box>
-        <Box sx={{ flexGrow: 1 }}>
-          {loading ? (
-            <Typography>Loading listings...</Typography>
-          ) : (
-            <Grid container spacing={2}>
-              {listings.map((listing) => (
-                <Grid item xs={12} sm={6} md={4} key={listing.id}>
-                  <ListingCard listing={listing} />
-                </Grid>
-              ))}
-            </Grid>
-          )}
-        </Box>
-      </Box>
+      </Container>
     </>
   );
 };
