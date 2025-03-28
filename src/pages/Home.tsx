@@ -23,7 +23,7 @@ const Home: React.FC = () => {
       }}
     >
       <Typography variant="h2" sx={{ fontWeight: "bold", mb: 2 }}>
-        Welcome to Husky Haggle
+        Welcome to Husky Haggles
       </Typography>
       <Typography variant="h6" sx={{ mb: 4 }}>
         Buy, sell, and trade listings with your community!
