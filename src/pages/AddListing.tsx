@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+// pages/AddListing.tsx
+import React, { useState, useEffect, Suspense } from "react";
 import {
   Button,
   Container,
@@ -9,13 +10,17 @@ import {
   TextField,
 } from "@mui/material";
 import { Helmet } from "react-helmet";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
 import NeighborhoodPicker from "../components/NeighborhoodPicker";
 import { supabase } from "../supabaseClient";
 import { generateListingId } from "../utils/generateListingId";
 
+// Dynamically import ReactQuill to defer loading (and avoid some strict‑mode warnings)
+const ReactQuill = React.lazy(() => import("react-quill-new"));
+import "react-quill-new/dist/quill.snow.css";
+
 const AddListing: React.FC = () => {
+  // isMounted flag to delay rendering of ReactQuill until after mount.
+  const [isMounted, setIsMounted] = useState(false);
   const [name, setName] = useState("");
   const [content, setContent] = useState("<p></p>");
   const [inStock, setInStock] = useState(true);
@@ -27,17 +32,24 @@ const AddListing: React.FC = () => {
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
 
-  // Handler for "Use Current Location" can remain as before.
+  // Set mounted flag after component mounts.
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // "Use Current Location" handler with slight randomization on the client side.
   const handleUseCurrentLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
           const randomOffset = () => (Math.random() - 0.5) * 0.01;
-          setLatitude(latitude + randomOffset());
-          setLongitude(longitude + randomOffset());
-          // In production, reverse geocode these coordinates to a neighborhood.
-          setLocation("Current Neighborhood"); // Placeholder.
+          const newLat = latitude + randomOffset();
+          const newLng = longitude + randomOffset();
+          setLatitude(newLat);
+          setLongitude(newLng);
+          // In production, reverse geocode these coordinates to get the neighborhood name.
+          setLocation("Current Neighborhood"); // Placeholder text.
         },
         (error) => {
           console.error("Geolocation error:", error);
@@ -96,7 +108,8 @@ const AddListing: React.FC = () => {
           Add New Listing
         </Typography>
         <Grid container spacing={3} sx={{ width: "100%", maxWidth: 900 }}>
-          <Grid item xs={12} md={8}>
+          {/* Left Column: 66.66% width on md and up, 100% on xs */}
+          <Grid sx={{ width: { xs: "100%", md: "66.66%" } }}>
             <Typography fontWeight="bold" mb={1}>
               Listing Name:
             </Typography>
@@ -108,14 +121,19 @@ const AddListing: React.FC = () => {
             <Typography fontWeight="bold" mt={2} mb={1}>
               Description:
             </Typography>
-            <ReactQuill
-              theme="snow"
-              value={content}
-              onChange={setContent}
-              style={{ height: 200, marginBottom: 16, width: "100%" }}
-            />
+            <Suspense fallback={<div>Loading editor...</div>}>
+              {isMounted && (
+                <ReactQuill
+                  theme="snow"
+                  value={content}
+                  onChange={setContent}
+                  style={{ height: 200, marginBottom: 16, width: "100%" }}
+                />
+              )}
+            </Suspense>
           </Grid>
-          <Grid item xs={12} md={4}>
+          {/* Right Column: 33.33% width on md and up, 100% on xs */}
+          <Grid sx={{ width: { xs: "100%", md: "33.33%" } }}>
             <Typography fontWeight="bold" mb={1}>
               Price:
             </Typography>
