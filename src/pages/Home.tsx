@@ -8,7 +8,7 @@ const Home: React.FC = () => {
 
   useEffect(() => {
     // We often set a custom title here if we want:
-    document.title = "Home - Husky Haggle";
+    document.title = "Home - Husky Haggles";
   }, []);
 
   return (

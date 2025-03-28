@@ -10,7 +10,6 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
-import UsersGrid from "../components/UsersGrid"; // optional if you had multiple users from this user, but typically it's for a single user
 import ListingsGrid from "../components/ListingsGrid";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
@@ -31,6 +30,13 @@ interface Listing {
   images: string[];
   price?: number;
   created_at?: string;
+  // The 'users' object will be populated so ListingCard can route properly
+  users?: {
+    username: string;
+    firstName: string;
+    lastName: string;
+    profile_picture: string;
+  };
 }
 
 /**
@@ -75,38 +81,70 @@ const UserDetails: React.FC = () => {
       if (!user) return;
       const { data, error } = await supabase
         .from("listings")
-        .select("id, name, images, price, created_at")
+        // UPDATED query to also select the user relationship
+        .select(
+          `
+          id,
+          name,
+          images,
+          price,
+          created_at,
+          users (
+            username,
+            firstName,
+            lastName,
+            profile_picture
+          )
+        `
+        )
         .eq("user_id", user.id);
 
       if (error) {
         console.error("Error fetching user listings:", error.message);
-      } else {
-        let sorted = data || [];
+      } else if (data) {
+        // Flatten any array in 'users' if Supabase returns an array
+        let listingsData = data.map((listing: any) => {
+          return {
+            ...listing,
+            users:
+              listing.users &&
+              Array.isArray(listing.users) &&
+              listing.users.length > 0
+                ? listing.users[0]
+                : listing.users,
+          };
+        });
+
+        // Sort after flattening
         switch (sortBy) {
           case "date_desc":
-            sorted.sort(
-              (a, b) =>
-                new Date(b.created_at).getTime() -
-                new Date(a.created_at).getTime()
+            listingsData.sort(
+              (a: Listing, b: Listing) =>
+                new Date(b.created_at!).getTime() -
+                new Date(a.created_at!).getTime()
             );
             break;
           case "date_asc":
-            sorted.sort(
-              (a, b) =>
-                new Date(a.created_at).getTime() -
-                new Date(b.created_at).getTime()
+            listingsData.sort(
+              (a: Listing, b: Listing) =>
+                new Date(a.created_at!).getTime() -
+                new Date(b.created_at!).getTime()
             );
             break;
           case "price_asc":
-            sorted.sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
+            listingsData.sort(
+              (a: Listing, b: Listing) => (a.price ?? 0) - (b.price ?? 0)
+            );
             break;
           case "price_desc":
-            sorted.sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
+            listingsData.sort(
+              (a: Listing, b: Listing) => (b.price ?? 0) - (a.price ?? 0)
+            );
             break;
           default:
             break;
         }
-        setListings(sorted);
+        setListings(listingsData);
       }
       setLoading(false);
     };
