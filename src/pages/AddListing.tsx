@@ -11,11 +11,11 @@ import {
 import { Helmet } from "react-helmet";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import NeighborhoodPicker from "../components/NeighborhoodPicker";
 import { supabase } from "../supabaseClient";
 import { generateListingId } from "../utils/generateListingId";
 
 const AddListing: React.FC = () => {
-  // Store description as HTML via ReactQuill.
   const [name, setName] = useState("");
   const [content, setContent] = useState("<p></p>");
   const [inStock, setInStock] = useState(true);
@@ -24,23 +24,52 @@ const AddListing: React.FC = () => {
   const [condition, setCondition] = useState("");
   const [category, setCategory] = useState("");
   const [location, setLocation] = useState("");
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
+
+  // Handler for "Use Current Location" can remain as before.
+  const handleUseCurrentLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          const randomOffset = () => (Math.random() - 0.5) * 0.01;
+          setLatitude(latitude + randomOffset());
+          setLongitude(longitude + randomOffset());
+          // In production, reverse geocode these coordinates to a neighborhood.
+          setLocation("Current Neighborhood"); // Placeholder.
+        },
+        (error) => {
+          console.error("Geolocation error:", error);
+          setLatitude(null);
+          setLongitude(null);
+          setLocation("");
+        }
+      );
+    } else {
+      console.error("Geolocation not supported");
+    }
+  };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    const listingId = generateListingId("user123", name); // Replace "user123" appropriately.
+    const listingId = generateListingId("user123", name);
     const { data, error } = await supabase.from("listings").insert([
       {
         id: listingId,
         name,
-        description: content, // stored as HTML
+        description: content,
         in_stock: inStock,
         images: [imageUrl],
         price: parseFloat(price),
         condition,
         category,
         location,
+        latitude,
+        longitude,
       },
     ]);
+
     if (error) {
       console.error("Error adding listing:", error);
     } else {
@@ -67,7 +96,6 @@ const AddListing: React.FC = () => {
           Add New Listing
         </Typography>
         <Grid container spacing={3} sx={{ width: "100%", maxWidth: 900 }}>
-          {/* Left Column: Listing Name and Description */}
           <Grid item xs={12} md={8}>
             <Typography fontWeight="bold" mb={1}>
               Listing Name:
@@ -75,9 +103,7 @@ const AddListing: React.FC = () => {
             <TextField
               fullWidth
               value={name}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setName(e.target.value)
-              }
+              onChange={(e) => setName(e.target.value)}
             />
             <Typography fontWeight="bold" mt={2} mb={1}>
               Description:
@@ -89,7 +115,6 @@ const AddListing: React.FC = () => {
               style={{ height: 200, marginBottom: 16, width: "100%" }}
             />
           </Grid>
-          {/* Right Column: Price, Condition, Category, Location */}
           <Grid item xs={12} md={4}>
             <Typography fontWeight="bold" mb={1}>
               Price:
@@ -98,9 +123,7 @@ const AddListing: React.FC = () => {
               type="number"
               fullWidth
               value={price}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setPrice(e.target.value)
-              }
+              onChange={(e) => setPrice(e.target.value)}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">$</InputAdornment>
@@ -113,9 +136,7 @@ const AddListing: React.FC = () => {
             <TextField
               fullWidth
               value={condition}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setCondition(e.target.value)
-              }
+              onChange={(e) => setCondition(e.target.value)}
             />
             <Typography fontWeight="bold" mt={2} mb={1}>
               Category:
@@ -123,20 +144,24 @@ const AddListing: React.FC = () => {
             <TextField
               fullWidth
               value={category}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setCategory(e.target.value)
-              }
+              onChange={(e) => setCategory(e.target.value)}
             />
             <Typography fontWeight="bold" mt={2} mb={1}>
               Location:
             </Typography>
-            <TextField
-              fullWidth
+            <NeighborhoodPicker
               value={location}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setLocation(e.target.value)
-              }
+              onChange={(neighborhood, coords) => {
+                setLocation(neighborhood);
+                setLatitude(coords.lat);
+                setLongitude(coords.lng);
+              }}
             />
+            <Box sx={{ mt: 1 }}>
+              <Button variant="outlined" onClick={handleUseCurrentLocation}>
+                Use Current Location
+              </Button>
+            </Box>
           </Grid>
         </Grid>
         <Box sx={{ mt: 3, textAlign: "center" }}>

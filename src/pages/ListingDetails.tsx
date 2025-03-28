@@ -106,7 +106,7 @@ const ListingDetails: React.FC = () => {
       <Container sx={{ mt: 4 }}>
         <Card sx={{ p: 3 }}>
           <Grid container spacing={2}>
-            {/* Left Column: Image Carousel, Title and Description */}
+            {/* Left Column: Image Carousel, Title locked below image, Description */}
             <Grid item xs={12} md={6}>
               <Box sx={{ position: "relative" }}>
                 {listing.images && listing.images.length > 0 ? (
@@ -156,15 +156,18 @@ const ListingDetails: React.FC = () => {
                   </>
                 )}
               </Box>
-              <Typography variant="h4" sx={{ fontWeight: "bold", mb: 1 }}>
-                {listing.name}
-              </Typography>
+              {/* Title locked a fixed distance below the image */}
+              <Box sx={{ mt: 2, mb: 1 }}>
+                <Typography variant="h4" sx={{ fontWeight: "bold" }}>
+                  {listing.name}
+                </Typography>
+              </Box>
               <Typography variant="body1" sx={{ mb: 2 }}>
                 {listing.description}
               </Typography>
             </Grid>
 
-            {/* Right Column: Product and Seller Info */}
+            {/* Right Column: Product & Seller Information */}
             <Grid item xs={12} md={6}>
               <Box sx={{ p: 2, border: "1px solid #ddd", borderRadius: 2 }}>
                 <Typography variant="h6" gutterBottom>

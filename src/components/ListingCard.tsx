@@ -21,7 +21,8 @@ interface Listing {
   name: string;
   images: string[];
   price?: number;
-  users?: User; // Joined seller info
+  created_at?: string;
+  users?: User;
 }
 
 interface ListingCardProps {
@@ -32,7 +33,6 @@ const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
   const navigate = useNavigate();
 
   const handleCardClick = () => {
-    // Clicking anywhere on the card (except the username) navigates to the listing details.
     if (listing.users?.username) {
       navigate(`/u/${listing.users.username}/${listing.id}`);
     } else {
@@ -43,7 +43,7 @@ const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
   const handleUsernameClick = (
     e: React.MouseEvent<HTMLSpanElement, MouseEvent>
   ) => {
-    e.stopPropagation(); // Prevent parent click event.
+    e.stopPropagation();
     navigate(`/u/${listing.users?.username}`);
   };
 
@@ -82,6 +82,15 @@ const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
           {listing.price && (
             <Typography variant="body2" color="text.secondary">
               Price: ${listing.price}
+            </Typography>
+          )}
+          {listing.created_at && (
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              display="block"
+            >
+              Posted on: {new Date(listing.created_at).toLocaleString()}
             </Typography>
           )}
           <Typography variant="caption" color="text.secondary">

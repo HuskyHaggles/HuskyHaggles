@@ -5,12 +5,21 @@ import { useNavigate } from "react-router-dom";
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
+  // Assume navbar is 64px tall.
   return (
     <>
       <Helmet>
         <title>Home - Husky Haggles</title>
       </Helmet>
-      <Container sx={{ mt: 4, textAlign: "center" }}>
+      <Container
+        sx={{
+          height: "calc(100vh - 64px)",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          textAlign: "center",
+        }}
+      >
         <Typography variant="h2" sx={{ fontWeight: "bold", mb: 2 }}>
           Welcome to Husky Haggles
         </Typography>

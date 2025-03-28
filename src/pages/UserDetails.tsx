@@ -19,6 +19,7 @@ interface User {
   firstName: string;
   lastName: string;
   profile_picture: string;
+  created_at?: string;
 }
 
 interface Listing {
@@ -43,7 +44,9 @@ const UserDetails: React.FC = () => {
       if (!username) return;
       const { data, error } = await supabase
         .from("users")
-        .select("id, username, email, firstName, lastName, profile_picture")
+        .select(
+          "id, username, email, firstName, lastName, profile_picture, created_at"
+        )
         .eq("username", username)
         .single();
       if (error) {
@@ -110,7 +113,6 @@ const UserDetails: React.FC = () => {
                 </Typography>
               </Box>
             </Box>
-
             <Button
               variant="outlined"
               onClick={() => navigate("/users")}
@@ -118,7 +120,6 @@ const UserDetails: React.FC = () => {
             >
               Back to Users
             </Button>
-
             <Typography variant="h5" sx={{ mb: 2 }}>
               {user.firstName}'s Listings
             </Typography>

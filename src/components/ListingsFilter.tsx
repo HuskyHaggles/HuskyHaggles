@@ -1,23 +1,31 @@
-// src/components/ListingsFilter.tsx
 import React, { useState } from "react";
 import {
   Box,
   Paper,
   TextField,
-  FormControlLabel,
-  Checkbox,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
   Button,
   Typography,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
+import { SelectChangeEvent } from "@mui/material/Select";
 
 export interface FilterValues {
   searchTerm: string;
   inStockOnly: boolean;
+  soldOnly: boolean;
   dateFrom: string;
   dateTo: string;
   category: string;
   location: string;
   condition: string;
+  minPrice: number | null;
+  maxPrice: number | null;
+  sortBy: string;
 }
 
 interface ListingsFilterProps {
@@ -27,19 +35,54 @@ interface ListingsFilterProps {
 const ListingsFilter: React.FC<ListingsFilterProps> = ({ onFilterChange }) => {
   const [filters, setFilters] = useState<FilterValues>({
     searchTerm: "",
-    inStockOnly: false,
+    inStockOnly: true, // Checked by default
+    soldOnly: false,
     dateFrom: "",
     dateTo: "",
     category: "",
     location: "",
     condition: "",
+    minPrice: null,
+    maxPrice: null,
+    sortBy: "",
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value, type } = e.target;
+    if (type === "checkbox") {
+      const target = e.target as HTMLInputElement;
+      const newValue = target.checked;
+      setFilters((prev) => {
+        const newFilters = {
+          ...prev,
+          [name]: newValue,
+        };
+        // Ensure mutual exclusivity
+        if (name === "inStockOnly" && newValue) {
+          newFilters.soldOnly = false;
+        } else if (name === "soldOnly" && newValue) {
+          newFilters.inStockOnly = false;
+        }
+        return newFilters;
+      });
+    } else {
+      setFilters((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+  };
+
+  const handleSelectChange = (
+    e: SelectChangeEvent<string>,
+    child: React.ReactNode
+  ) => {
+    const { name, value } = e.target;
     setFilters((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name as string]: value,
     }));
   };
 
@@ -48,14 +91,18 @@ const ListingsFilter: React.FC<ListingsFilterProps> = ({ onFilterChange }) => {
   };
 
   const handleClear = () => {
-    const cleared = {
+    const cleared: FilterValues = {
       searchTerm: "",
-      inStockOnly: false,
+      inStockOnly: true,
+      soldOnly: false,
       dateFrom: "",
       dateTo: "",
       category: "",
       location: "",
       condition: "",
+      minPrice: null,
+      maxPrice: null,
+      sortBy: "",
     };
     setFilters(cleared);
     onFilterChange(cleared);
@@ -69,7 +116,7 @@ const ListingsFilter: React.FC<ListingsFilterProps> = ({ onFilterChange }) => {
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         <TextField
           name="searchTerm"
-          label="Search by name or description"
+          label="Search by name"
           variant="outlined"
           value={filters.searchTerm}
           onChange={handleInputChange}
@@ -84,6 +131,16 @@ const ListingsFilter: React.FC<ListingsFilterProps> = ({ onFilterChange }) => {
             />
           }
           label="In Stock Only"
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              name="soldOnly"
+              checked={filters.soldOnly}
+              onChange={handleInputChange}
+            />
+          }
+          label="Sold Only"
         />
         <TextField
           name="dateFrom"
@@ -101,30 +158,59 @@ const ListingsFilter: React.FC<ListingsFilterProps> = ({ onFilterChange }) => {
           onChange={handleInputChange}
           InputLabelProps={{ shrink: true }}
         />
+        <FormControl fullWidth>
+          <InputLabel>Category</InputLabel>
+          <Select
+            name="category"
+            value={filters.category}
+            onChange={handleSelectChange}
+            label="Category"
+          >
+            <MenuItem value="">
+              <em>None</em>
+            </MenuItem>
+            <MenuItem value="Electronics">Electronics</MenuItem>
+            <MenuItem value="Furniture">Furniture</MenuItem>
+            <MenuItem value="Books">Books</MenuItem>
+            <MenuItem value="Clothing">Clothing</MenuItem>
+            {/* Add more categories or fetch from a categories table */}
+          </Select>
+        </FormControl>
         <TextField
-          name="category"
-          label="Category"
+          name="minPrice"
+          label="Minimum Price"
+          type="number"
           variant="outlined"
-          value={filters.category}
+          value={filters.minPrice || ""}
           onChange={handleInputChange}
           fullWidth
         />
         <TextField
-          name="location"
-          label="Location"
+          name="maxPrice"
+          label="Maximum Price"
+          type="number"
           variant="outlined"
-          value={filters.location}
+          value={filters.maxPrice || ""}
           onChange={handleInputChange}
           fullWidth
         />
-        <TextField
-          name="condition"
-          label="Condition"
-          variant="outlined"
-          value={filters.condition}
-          onChange={handleInputChange}
-          fullWidth
-        />
+        <FormControl fullWidth>
+          <InputLabel>Sort By</InputLabel>
+          <Select
+            name="sortBy"
+            value={filters.sortBy}
+            onChange={handleSelectChange}
+            label="Sort By"
+          >
+            <MenuItem value="">
+              <em>None</em>
+            </MenuItem>
+            <MenuItem value="date_desc">Date Posted (Newest First)</MenuItem>
+            <MenuItem value="date_asc">Date Posted (Oldest First)</MenuItem>
+            <MenuItem value="price_asc">Price (Low to High)</MenuItem>
+            <MenuItem value="price_desc">Price (High to Low)</MenuItem>
+          </Select>
+        </FormControl>
         <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end" }}>
           <Button variant="outlined" onClick={handleClear}>
             Clear
