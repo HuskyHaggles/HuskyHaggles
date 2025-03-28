@@ -1,6 +1,6 @@
-// Users.tsx
 import React, { useEffect, useState } from "react";
 import { Container, Typography, Grid } from "@mui/material";
+import { Helmet } from "react-helmet";
 import UserCard from "../components/UserCard";
 import { supabase } from "../supabaseClient";
 
@@ -8,6 +8,8 @@ interface User {
   id: string;
   username: string;
   profile_picture: string;
+  firstName: string;
+  lastName: string;
 }
 
 const Users: React.FC = () => {
@@ -18,13 +20,13 @@ const Users: React.FC = () => {
     const fetchUsers = async () => {
       const { data, error } = await supabase
         .from("users")
-        .select("id, username, profile_picture")
+        .select("id, username, profile_picture, firstName, lastName")
         .order("username", { ascending: true });
 
       if (error) {
         console.error("Error fetching users:", error);
       } else {
-        setUsers(data);
+        setUsers(data || []);
       }
       setLoading(false);
     };
@@ -34,6 +36,9 @@ const Users: React.FC = () => {
 
   return (
     <Container sx={{ mt: 4 }}>
+      <Helmet>
+        <title>Users - Husky Haggles</title>
+      </Helmet>
       <Typography variant="h4" gutterBottom>
         Users
       </Typography>

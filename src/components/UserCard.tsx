@@ -1,4 +1,3 @@
-// components/UserCard.tsx
 import React from "react";
 import {
   Card,
@@ -13,6 +12,8 @@ interface User {
   id?: string;
   username: string;
   profile_picture: string;
+  firstName: string;
+  lastName: string;
 }
 
 interface UserCardProps {
@@ -30,18 +31,26 @@ const UserCard: React.FC<UserCardProps> = ({ user }) => {
     <Card
       variant="outlined"
       sx={{
-        width: 200,
-        height: 200,
+        width: 220,
+        height: 260,
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
         m: 1,
+        p: 1,
       }}
     >
       <CardActionArea
         onClick={handleClick}
-        sx={{ width: "100%", height: "100%" }}
+        sx={{
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
       >
         <Box
           component="img"
@@ -50,14 +59,18 @@ const UserCard: React.FC<UserCardProps> = ({ user }) => {
           sx={{
             width: 120,
             height: 120,
-            borderRadius: "50%",
+            borderRadius: "8px", // Rounded square shape
             objectFit: "cover",
+            objectPosition: "center",
             mb: 1,
           }}
         />
-        <CardContent sx={{ p: 1 }}>
-          <Typography variant="h6" align="center">
-            {user.username}
+        <CardContent sx={{ p: 0, textAlign: "center" }}>
+          <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+            {user.firstName} {user.lastName}
+          </Typography>
+          <Typography variant="body2" sx={{ color: "primary.main" }}>
+            @{user.username}
           </Typography>
         </CardContent>
       </CardActionArea>

@@ -10,6 +10,7 @@ import UserDetails from "./pages/UserDetails";
 import Navbar from "./components/Navbar";
 import { ThemeProvider } from "@mui/material/styles";
 import theme from "./theme";
+import AddListing from "./pages/AddListing";
 
 function App() {
   return (
@@ -23,9 +24,8 @@ function App() {
           <Route path="/users" element={<Users />} />
           <Route path="/u/:username" element={<UserDetails />} />
           <Route path="/listings" element={<Listings />} />
-          {/* Updated param name to match 'listing.id' */}
           <Route path="/u/:username/:listing_id" element={<ListingDetails />} />
-          {/* Add the create listing route when implemented */}
+          <Route path="/add_listing" element={<AddListing />} />
         </Routes>
       </Router>
     </ThemeProvider>

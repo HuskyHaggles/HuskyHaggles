@@ -1,50 +1,39 @@
 import React from "react";
+import { Container, Typography, Box, Button } from "@mui/material";
+import { Helmet } from "react-helmet";
 import { useNavigate } from "react-router-dom";
-import { Button, Container, Typography } from "@mui/material";
 
-const Home = () => {
+const Home: React.FC = () => {
   const navigate = useNavigate();
-
   return (
-    <Container sx={{ mt: 4, textAlign: "center" }}>
-      <Typography variant="h3" gutterBottom>
-        Welcome to Husky Haggles!
-      </Typography>
-      <Typography variant="body1" paragraph>
-        Buy, sell, and trade with fellow Northeastern students.
-      </Typography>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => navigate("/login")}
-        sx={{ m: 1 }}
-      >
-        Login
-      </Button>
-      <Button
-        variant="contained"
-        color="secondary"
-        onClick={() => navigate("/signup")}
-        sx={{ m: 1 }}
-      >
-        Signup
-      </Button>
-      <Button
-        variant="contained"
-        onClick={() => navigate("/listings")}
-        sx={{ m: 1 }}
-      >
-        View Listings
-      </Button>
-      <Button
-        variant="contained"
-        color="success"
-        onClick={() => navigate("/users")}
-        sx={{ m: 1 }}
-      >
-        View Users
-      </Button>
-    </Container>
+    <>
+      <Helmet>
+        <title>Home - Husky Haggles</title>
+      </Helmet>
+      <Container sx={{ mt: 4, textAlign: "center" }}>
+        <Typography variant="h2" sx={{ fontWeight: "bold", mb: 2 }}>
+          Welcome to Husky Haggles
+        </Typography>
+        <Typography variant="h6" sx={{ mb: 4 }}>
+          Buy, sell, and trade listings with your community!
+        </Typography>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            gap: 2,
+            flexWrap: "wrap",
+          }}
+        >
+          <Button variant="contained" onClick={() => navigate("/listings")}>
+            Browse Listings
+          </Button>
+          <Button variant="outlined" onClick={() => navigate("/users")}>
+            View Users
+          </Button>
+        </Box>
+      </Container>
+    </>
   );
 };
 

@@ -1,21 +1,27 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Typography,
   Card,
   CardMedia,
   CardContent,
+  Grid,
   Box,
   Divider,
-  Chip,
+  Button,
+  IconButton,
 } from "@mui/material";
-import { useParams } from "react-router-dom";
+import { Helmet } from "react-helmet";
+import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../supabaseClient";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 
 interface User {
   firstName: string;
   lastName: string;
   username: string;
+  profile_picture: string;
 }
 
 interface Listing {
@@ -35,25 +41,21 @@ const ListingDetails: React.FC = () => {
   const { listing_id } = useParams<{ listing_id: string }>();
   const [listing, setListing] = useState<Listing | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchListing = async () => {
-      if (!listing_id) return setLoading(false);
-
+      if (!listing_id) {
+        setLoading(false);
+        return;
+      }
       const { data, error } = await supabase
         .from("listings")
         .select(
           `
-          id,
-          name,
-          description,
-          images,
-          price,
-          category,
-          location,
-          condition,
-          created_at,
-          users ( firstName, lastName, username )
+          id, name, description, images, price, category, location, condition, created_at, user_id,
+          users ( firstName, lastName, username, profile_picture )
         `
         )
         .eq("id", listing_id)
@@ -62,7 +64,14 @@ const ListingDetails: React.FC = () => {
       if (error) {
         console.error("Error fetching listing:", error.message);
       } else {
-        setListing({ ...data, users: data.users });
+        const listingData: Listing = {
+          ...data,
+          users:
+            data.users && Array.isArray(data.users) && data.users.length > 0
+              ? data.users[0]
+              : data.users,
+        };
+        setListing(listingData);
       }
       setLoading(false);
     };
@@ -70,79 +79,177 @@ const ListingDetails: React.FC = () => {
     fetchListing();
   }, [listing_id]);
 
+  const handlePrevImage = () => {
+    if (listing?.images && listing.images.length > 0) {
+      setCurrentImageIndex((prev) =>
+        prev === 0 ? listing.images.length - 1 : prev - 1
+      );
+    }
+  };
+
+  const handleNextImage = () => {
+    if (listing?.images && listing.images.length > 0) {
+      setCurrentImageIndex((prev) =>
+        prev === listing.images.length - 1 ? 0 : prev + 1
+      );
+    }
+  };
+
   if (loading) return <Typography>Loading...</Typography>;
   if (!listing) return <Typography>Listing not found</Typography>;
 
   return (
-    <Container sx={{ mt: 4, mb: 4 }}>
-      <Card sx={{ p: 3, borderRadius: 4, boxShadow: 3 }}>
-        <Box display="flex" flexDirection="column" gap={3}>
-          {/* Images */}
-          {listing.images?.length > 0 && (
-            <Box display="flex" gap={2} overflow="auto">
-              {listing.images.map((imgUrl, idx) => (
-                <CardMedia
-                  key={idx}
-                  component="img"
-                  image={imgUrl}
-                  alt={`Image ${idx + 1}`}
-                  sx={{
-                    height: 300,
-                    width: 400,
-                    objectFit: "cover",
-                    borderRadius: 2,
-                  }}
-                />
-              ))}
-            </Box>
-          )}
+    <>
+      <Helmet>
+        <title>{listing.name} - Husky Haggles</title>
+      </Helmet>
+      <Container sx={{ mt: 4 }}>
+        <Card sx={{ p: 3 }}>
+          <Grid container spacing={2}>
+            {/* Left Column: Image Carousel, Title and Description */}
+            <Grid item xs={12} md={6}>
+              <Box sx={{ position: "relative" }}>
+                {listing.images && listing.images.length > 0 ? (
+                  <CardMedia
+                    component="img"
+                    height="300"
+                    image={listing.images[currentImageIndex]}
+                    alt={`${listing.name} - image ${currentImageIndex + 1}`}
+                    sx={{
+                      width: "100%",
+                      objectFit: "cover",
+                      objectPosition: "center",
+                      mb: 2,
+                    }}
+                  />
+                ) : (
+                  <Typography>No images available.</Typography>
+                )}
+                {listing.images && listing.images.length > 1 && (
+                  <>
+                    <IconButton
+                      sx={{
+                        position: "absolute",
+                        top: "50%",
+                        left: 0,
+                        transform: "translateY(-50%)",
+                        backgroundColor: "rgba(0,0,0,0.4)",
+                        color: "#fff",
+                      }}
+                      onClick={handlePrevImage}
+                    >
+                      <ArrowBackIosNewIcon />
+                    </IconButton>
+                    <IconButton
+                      sx={{
+                        position: "absolute",
+                        top: "50%",
+                        right: 0,
+                        transform: "translateY(-50%)",
+                        backgroundColor: "rgba(0,0,0,0.4)",
+                        color: "#fff",
+                      }}
+                      onClick={handleNextImage}
+                    >
+                      <ArrowForwardIosIcon />
+                    </IconButton>
+                  </>
+                )}
+              </Box>
+              <Typography variant="h4" sx={{ fontWeight: "bold", mb: 1 }}>
+                {listing.name}
+              </Typography>
+              <Typography variant="body1" sx={{ mb: 2 }}>
+                {listing.description}
+              </Typography>
+            </Grid>
 
-          {/* Title and Price */}
-          <Box>
-            <Typography variant="h4" fontWeight={700} gutterBottom>
-              {listing.name}
-            </Typography>
-            <Typography variant="h6" color="primary">
-              {listing.price ? `$${listing.price}` : "Price not available"}
-            </Typography>
-          </Box>
+            {/* Right Column: Product and Seller Info */}
+            <Grid item xs={12} md={6}>
+              <Box sx={{ p: 2, border: "1px solid #ddd", borderRadius: 2 }}>
+                <Typography variant="h6" gutterBottom>
+                  Product Information
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Price:</strong>{" "}
+                  {listing.price ? `$${listing.price}` : "N/A"}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Category:</strong> {listing.category || "N/A"}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Location:</strong> {listing.location || "N/A"}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Condition:</strong> {listing.condition || "N/A"}
+                </Typography>
+                <Typography variant="body2" sx={{ mt: 1 }}>
+                  <strong>Posted on:</strong>{" "}
+                  {listing.created_at
+                    ? new Date(listing.created_at).toLocaleString()
+                    : "N/A"}
+                </Typography>
 
-          {/* Description */}
-          <Typography variant="body1" sx={{ whiteSpace: "pre-line" }}>
-            {listing.description}
-          </Typography>
+                <Divider sx={{ my: 2 }} />
 
-          <Divider />
+                <Typography variant="h6" gutterBottom>
+                  Seller Information
+                </Typography>
+                <Box sx={{ display: "flex", alignItems: "center" }}>
+                  {listing.users?.profile_picture && (
+                    <Box
+                      component="img"
+                      src={listing.users.profile_picture}
+                      alt={listing.users.username}
+                      sx={{
+                        width: 60,
+                        height: 60,
+                        borderRadius: "8px",
+                        objectFit: "cover",
+                        objectPosition: "center",
+                        mr: 2,
+                      }}
+                    />
+                  )}
+                  <Box>
+                    <Typography variant="body2">
+                      <strong>Full Name:</strong> {listing.users?.firstName}{" "}
+                      {listing.users?.lastName}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        cursor: "pointer",
+                        color: "primary.main",
+                        textDecoration: "underline",
+                      }}
+                      onClick={() => navigate(`/u/${listing.users?.username}`)}
+                    >
+                      @{listing.users?.username}
+                    </Typography>
+                  </Box>
+                </Box>
 
-          {/* Metadata */}
-          <Box display="flex" flexWrap="wrap" gap={2}>
-            <Chip label={`Category: ${listing.category || "N/A"}`} />
-            <Chip label={`Location: ${listing.location || "N/A"}`} />
-            <Chip label={`Condition: ${listing.condition || "N/A"}`} />
-            <Chip
-              label={`Created: ${
-                listing.created_at
-                  ? new Date(listing.created_at).toLocaleString()
-                  : "N/A"
-              }`}
-            />
-          </Box>
-
-          <Divider />
-
-          {/* Seller Info */}
-          <Box>
-            <Typography variant="h6" gutterBottom>
-              Seller Information
-            </Typography>
-            <Typography variant="body2">
-              {listing.users?.firstName} {listing.users?.lastName} (@
-              {listing.users?.username})
-            </Typography>
-          </Box>
-        </Box>
-      </Card>
-    </Container>
+                <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
+                  <Button
+                    variant="outlined"
+                    onClick={() => navigate("/listings")}
+                  >
+                    Back to Listings
+                  </Button>
+                  <Button
+                    variant="contained"
+                    onClick={() => navigate(`/u/${listing.users?.username}`)}
+                  >
+                    Get in Contact
+                  </Button>
+                </Box>
+              </Box>
+            </Grid>
+          </Grid>
+        </Card>
+      </Container>
+    </>
   );
 };
 
