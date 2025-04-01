@@ -1,5 +1,5 @@
 // src/pages/SignUp.tsx
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import SignupPage from "../components/SignupForm";
 
 /**

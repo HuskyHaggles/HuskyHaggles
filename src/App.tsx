@@ -1,5 +1,4 @@
 // src/App.tsx
-import React from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -7,8 +6,6 @@ import {
   useLocation,
 } from "react-router-dom";
 import "@fontsource/montserrat";
-
-/* Pages */
 import Home from "./pages/Home";
 import Users from "./pages/Users";
 import Listings from "./pages/Listings";
@@ -17,19 +14,12 @@ import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import UserDetails from "./pages/UserDetails";
 import AddListing from "./pages/AddListing";
-
-/* Global Components */
 import Navbar from "./components/Navbar";
-
-/* MUI / Theme */
 import { ThemeProvider } from "@mui/material/styles";
 import theme from "./theme";
 
-/* If you're using react-helmet-async elsewhere, you can keep this, or remove it if not needed */
-import { HelmetProvider } from "react-helmet-async";
-
-// A wrapper to allow keyed transitions based on location.pathname
-const AppRoutes: React.FC = () => {
+// Routes wrapper that keys on location.pathname for transitions
+const AppRoutes = () => {
   const location = useLocation();
   return (
     <Routes key={location.pathname} location={location}>
@@ -48,13 +38,10 @@ const AppRoutes: React.FC = () => {
 function App() {
   return (
     <ThemeProvider theme={theme}>
-      {/* If you're not using <Helmet> at all, you can remove HelmetProvider */}
-      <HelmetProvider>
-        <Router>
-          <Navbar />
-          <AppRoutes />
-        </Router>
-      </HelmetProvider>
+      <Router>
+        <Navbar />
+        <AppRoutes />
+      </Router>
     </ThemeProvider>
   );
 }

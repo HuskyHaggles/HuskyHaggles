@@ -1,5 +1,4 @@
 // src/components/SignupForm.tsx
-import React, { useState } from "react";
 import {
   Box,
   Container,
@@ -17,6 +16,7 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import SignUpButton from "./SignUpButton";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
+import { useState } from "react";
 
 const theme = createTheme();
 
@@ -45,7 +45,7 @@ export default function SignupForm() {
     const password = data.get("password") as string;
     const confirmPassword = data.get("confirmPassword") as string;
 
-    const validationErrors: string[] = [];
+    let validationErrors: string[] = [];
     if (!firstName) validationErrors.push("First Name is required.");
     if (!lastName) validationErrors.push("Last Name is required.");
     if (!username) validationErrors.push("Username is required.");
@@ -53,9 +53,8 @@ export default function SignupForm() {
     if (!password) validationErrors.push("Password is required.");
     if (!confirmPassword)
       validationErrors.push("Confirm password is required.");
-    if (password !== confirmPassword) {
+    if (password !== confirmPassword)
       validationErrors.push("Passwords do not match.");
-    }
 
     if (validationErrors.length > 0) {
       setErrors(validationErrors);
@@ -64,23 +63,19 @@ export default function SignupForm() {
     }
 
     try {
-      // Only do auth.signUp now. No table insert yet.
-      const { data: signUpData, error: signUpError } =
-        await supabase.auth.signUp({
-          email,
-          password,
-        });
+      // Sign up user via Supabase Auth.
+      const { error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+      });
       if (signUpError) {
         setErrors([signUpError.message]);
         setIsLoading(false);
         return;
       }
-      // signUpData.user is an unconfirmed user if email confirmation is on.
-
-      // Show “Check email” message, then optionally navigate:
+      // Since email confirmation is on, the user must check their email.
       setIsLoading(false);
-      // We'll just show an alert or route to a 'check email' page.
-      navigate("/check-email");
+      navigate("/check-email"); // A page telling the user to confirm their email.
     } catch (err: any) {
       setErrors([err.message || "Unknown error"]);
       setIsLoading(false);
@@ -201,8 +196,17 @@ export default function SignupForm() {
                   ),
                 }}
               />
-
-              {/* Omit the immediate row insert. We'll do that after confirmation + login. */}
+              <Box sx={{ mt: 2 }}>
+                <Button variant="contained" component="label" fullWidth>
+                  Upload profile picture (optional)
+                  <input
+                    hidden
+                    accept="image/*"
+                    type="file"
+                    name="profilePicture"
+                  />
+                </Button>
+              </Box>
               <SignUpButton isLoading={isLoading} />
             </Box>
             <Box sx={{ mt: 2, textAlign: "center" }}>

@@ -1,5 +1,4 @@
 // src/components/LoginButton.tsx
-import React from "react";
 import { Button } from "@mui/material";
 
 interface LoginButtonProps {
@@ -8,7 +7,7 @@ interface LoginButtonProps {
 
 /**
  * LoginButton
- * A specialized button for logging in, disabled when loading.
+ * A specialized button for login forms.
  */
 export default function LoginButton({ isLoading = false }: LoginButtonProps) {
   return (

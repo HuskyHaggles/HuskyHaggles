@@ -1,5 +1,4 @@
 // src/components/ListingsGrid.tsx
-import React from "react";
 import { Grid } from "@mui/material";
 import ListingCard from "./ListingCard";
 
@@ -14,13 +13,14 @@ interface ListingsGridProps {
 
 /**
  * ListingsGrid
- * Renders a list of listings in a responsive grid layout using ListingCard.
+ * Renders a list of listings in a responsive grid layout.
  */
-const ListingsGrid: React.FC<ListingsGridProps> = ({ listings }) => {
+const ListingsGrid = ({ listings }: ListingsGridProps) => {
   return (
     <Grid container spacing={2}>
       {listings.map((listing) => (
-        <Grid item xs={12} sm={6} md={4} key={listing.id}>
+        // Using new MUI Grid v2 syntax: remove "item" prop; responsive props go directly
+        <Grid key={listing.id} xs={12} sm={6} md={4}>
           <ListingCard listing={listing} />
         </Grid>
       ))}

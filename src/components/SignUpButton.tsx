@@ -1,5 +1,4 @@
 // src/components/SignUpButton.tsx
-import React from "react";
 import { Button } from "@mui/material";
 
 interface SignupButtonProps {
@@ -8,7 +7,7 @@ interface SignupButtonProps {
 
 /**
  * SignUpButton
- * Specialized button for signup flow, disabled when loading.
+ * A specialized button for sign-up forms.
  */
 export default function SignupButton({ isLoading = false }: SignupButtonProps) {
   return (

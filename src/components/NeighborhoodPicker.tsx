@@ -1,12 +1,14 @@
 // src/components/NeighborhoodPicker.tsx
-import React, { useState } from "react";
 import {
   Autocomplete,
   TextField,
   Box,
   CircularProgress,
   Typography,
+  AutocompleteChangeReason,
+  AutocompleteChangeDetails,
 } from "@mui/material";
+import { useState } from "react";
 
 /**
  * Nominatim result type
@@ -20,8 +22,6 @@ interface Suggestion {
 
 interface NeighborhoodPickerProps {
   value: string;
-  latitude?: number; // optional if you want
-  longitude?: number; // optional if you want
   onChange: (
     neighborhood: string,
     coords: { lat: number; lng: number }
@@ -45,16 +45,12 @@ function debounce<T extends (...args: any[]) => void>(fn: T, delay: number) {
  * NeighborhoodPicker
  * Provides an autocomplete for searching city/neighborhood via Nominatim.
  */
-const NeighborhoodPicker: React.FC<NeighborhoodPickerProps> = ({
-  value,
-  onChange,
-}) => {
+const NeighborhoodPicker = ({ value, onChange }: NeighborhoodPickerProps) => {
   const [inputValue, setInputValue] = useState<string>(value);
   const [options, setOptions] = useState<Suggestion[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
-  // Query Nominatim for address suggestions
-  const fetchSuggestions = async (query: string) => {
+  const debouncedFetch = debounce(async (query: string) => {
     if (!query) {
       setOptions([]);
       return;
@@ -74,9 +70,7 @@ const NeighborhoodPicker: React.FC<NeighborhoodPickerProps> = ({
       setOptions([]);
     }
     setLoading(false);
-  };
-
-  const debouncedFetch = debounce(fetchSuggestions, 500);
+  }, 500);
 
   const handleInputChange = (
     _event: React.SyntheticEvent,
@@ -86,30 +80,35 @@ const NeighborhoodPicker: React.FC<NeighborhoodPickerProps> = ({
     debouncedFetch(newInputValue);
   };
 
-  const handleSelection = (
+  const handleChange = (
     _event: React.SyntheticEvent,
-    newValue: Suggestion | null
+    newValue: string | Suggestion,
+    _reason: AutocompleteChangeReason,
+    _details?: AutocompleteChangeDetails<string | Suggestion>
   ) => {
-    if (newValue) {
-      const lat = parseFloat(newValue.lat);
-      const lng = parseFloat(newValue.lon);
-      onChange(newValue.display_name, { lat, lng });
-      setInputValue(newValue.display_name);
+    if (typeof newValue === "string") {
+      // If a raw string is returned, update inputValue only
+      setInputValue(newValue);
+      return;
     }
+    const lat = parseFloat(newValue.lat);
+    const lng = parseFloat(newValue.lon);
+    onChange(newValue.display_name, { lat, lng });
+    setInputValue(newValue.display_name);
   };
 
   return (
     <Box>
-      <Autocomplete
+      <Autocomplete<Suggestion, false, true, true>
         freeSolo
         disableClearable
         options={options}
         getOptionLabel={(option) =>
-          typeof option === "string" ? option : option.display_name || ""
+          typeof option === "string" ? option : option.display_name
         }
         inputValue={inputValue}
         onInputChange={handleInputChange}
-        onChange={handleSelection}
+        onChange={handleChange}
         renderInput={(params) => (
           <TextField
             {...params}
