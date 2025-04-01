@@ -24,7 +24,6 @@
     "react-dom": "^19.0.0",
     "react-google-recaptcha": "^3.1.0",
     "react-leaflet": "^5.0.0",
-    "react-mde": "^11.5.0",
     "react-quill-new": "^3.4.6",
     "react-router-dom": "^7.4.0",
     "showdown": "^2.1.0",
