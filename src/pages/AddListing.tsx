@@ -25,7 +25,7 @@ const AddListing: React.FC = () => {
   const [name, setName] = useState("");
   const [content, setContent] = useState("<p></p>");
   const [inStock] = useState(true);
-  const [imageUrl, setImageUrl] = useState("");
+  const [imageUrl] = useState("");
   const [price, setPrice] = useState("");
   const [condition, setCondition] = useState("");
   const [category, setCategory] = useState("");

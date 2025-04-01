@@ -43,7 +43,7 @@ const Navbar: React.FC = () => {
 
     // Optionally, also listen for auth state changes
     const { data: subscription } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      async (_event, session) => {
         if (session?.user) {
           setUser(session.user);
         } else {
