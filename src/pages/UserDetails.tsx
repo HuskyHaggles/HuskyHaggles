@@ -48,6 +48,7 @@ const obfuscateEmail = (email: string) =>
 /**
  * UserDetails Page
  * Shows the user’s profile info, plus the user’s listings.
+ * If viewing own profile, allow editing & logout.
  */
 const UserDetails: React.FC = () => {
   const { username } = useParams<{ username: string }>();
@@ -55,56 +56,65 @@ const UserDetails: React.FC = () => {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [sortBy, setSortBy] = useState<string>("date_desc");
+  const [authUserId, setAuthUserId] = useState<string | null>(null);
+
   const navigate = useNavigate();
 
+  // Fetch the logged-in user's ID
   useEffect(() => {
-    const fetchUserDetails = async () => {
-      if (!username) return;
-      const { data, error } = await supabase
-        .from("users")
-        .select(
-          "id, username, email, firstName, lastName, profile_picture, created_at"
-        )
-        .eq("username", username)
-        .single();
-      if (error) {
-        console.error("Error fetching user details:", error.message);
-      } else if (data) {
-        setUser(data);
+    supabase.auth.getUser().then(({ data }) => {
+      if (data?.user) {
+        setAuthUserId(data.user.id);
       }
-    };
-    fetchUserDetails();
+    });
+  }, []);
+
+  // Fetch the profile for "username"
+  useEffect(() => {
+    if (!username) return;
+    supabase
+      .from("users")
+      .select(
+        "id, username, email, firstName, lastName, profile_picture, created_at"
+      )
+      .eq("username", username)
+      .single()
+      .then(({ data, error }) => {
+        if (error) {
+          console.error("Error fetching user details:", error.message);
+        } else if (data) {
+          setUser(data);
+        }
+      });
   }, [username]);
 
+  // Once we have user, fetch their listings
   useEffect(() => {
-    const fetchUserListings = async () => {
-      if (!user) return;
-      const { data, error } = await supabase
-        .from("listings")
-        // UPDATED query to also select the user relationship
-        .select(
-          `
-          id,
-          name,
-          images,
-          price,
-          created_at,
-          users (
-            username,
-            firstName,
-            lastName,
-            profile_picture
-          )
+    if (!user) return;
+    supabase
+      .from("listings")
+      .select(
         `
+        id,
+        name,
+        images,
+        price,
+        created_at,
+        users (
+          username,
+          firstName,
+          lastName,
+          profile_picture
         )
-        .eq("user_id", user.id);
-
-      if (error) {
-        console.error("Error fetching user listings:", error.message);
-      } else if (data) {
-        // Flatten any array in 'users' if Supabase returns an array
-        let listingsData = data.map((listing: any) => {
-          return {
+      `
+      )
+      .eq("user_id", user.id)
+      .then(({ data, error }) => {
+        if (error) {
+          console.error("Error fetching user listings:", error.message);
+        } else if (data) {
+          // Flatten if needed
+          const listingsData = data.map((listing: any) => ({
             ...listing,
             users:
               listing.users &&
@@ -112,45 +122,44 @@ const UserDetails: React.FC = () => {
               listing.users.length > 0
                 ? listing.users[0]
                 : listing.users,
-          };
-        });
+          }));
 
-        // Sort after flattening
-        switch (sortBy) {
-          case "date_desc":
-            listingsData.sort(
-              (a: Listing, b: Listing) =>
-                new Date(b.created_at!).getTime() -
-                new Date(a.created_at!).getTime()
-            );
-            break;
-          case "date_asc":
-            listingsData.sort(
-              (a: Listing, b: Listing) =>
-                new Date(a.created_at!).getTime() -
-                new Date(b.created_at!).getTime()
-            );
-            break;
-          case "price_asc":
-            listingsData.sort(
-              (a: Listing, b: Listing) => (a.price ?? 0) - (b.price ?? 0)
-            );
-            break;
-          case "price_desc":
-            listingsData.sort(
-              (a: Listing, b: Listing) => (b.price ?? 0) - (a.price ?? 0)
-            );
-            break;
-          default:
-            break;
+          // Sort by chosen method
+          switch (sortBy) {
+            case "date_desc":
+              listingsData.sort(
+                (a: Listing, b: Listing) =>
+                  new Date(b.created_at!).getTime() -
+                  new Date(a.created_at!).getTime()
+              );
+              break;
+            case "date_asc":
+              listingsData.sort(
+                (a: Listing, b: Listing) =>
+                  new Date(a.created_at!).getTime() -
+                  new Date(b.created_at!).getTime()
+              );
+              break;
+            case "price_asc":
+              listingsData.sort(
+                (a: Listing, b: Listing) => (a.price ?? 0) - (b.price ?? 0)
+              );
+              break;
+            case "price_desc":
+              listingsData.sort(
+                (a: Listing, b: Listing) => (b.price ?? 0) - (a.price ?? 0)
+              );
+              break;
+            default:
+              break;
+          }
+          setListings(listingsData);
         }
-        setListings(listingsData);
-      }
-      setLoading(false);
-    };
-    fetchUserListings();
+        setLoading(false);
+      });
   }, [user, sortBy]);
 
+  // Set page title
   useEffect(() => {
     if (user) {
       document.title = `${user.firstName} ${user.lastName} (@${user.username}) - Husky Haggles`;
@@ -159,6 +168,12 @@ const UserDetails: React.FC = () => {
     }
   }, [user]);
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
+  };
+
+  // If user is not found or still loading initial data
   if (!user) {
     return (
       <Container sx={{ mt: 4 }}>
@@ -166,6 +181,14 @@ const UserDetails: React.FC = () => {
       </Container>
     );
   }
+
+  // Check if we own this profile
+  const isOwner = authUserId === user.id;
+
+  const handleEditProfile = () => {
+    // Example: navigate to an edit form, or open a modal
+    console.log("Edit profile clicked!");
+  };
 
   return (
     <Container sx={{ mt: 4 }}>
@@ -194,13 +217,21 @@ const UserDetails: React.FC = () => {
         </Box>
       </Box>
 
-      <Button
-        variant="outlined"
-        onClick={() => navigate("/users")}
-        sx={{ mb: 2 }}
-      >
-        Back to Users
-      </Button>
+      <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
+        <Button variant="outlined" onClick={() => navigate("/users")}>
+          Back to Users
+        </Button>
+        {isOwner && (
+          <>
+            <Button variant="outlined" onClick={handleEditProfile}>
+              Edit Profile
+            </Button>
+            <Button variant="contained" color="error" onClick={handleLogout}>
+              Logout
+            </Button>
+          </>
+        )}
+      </Box>
 
       <Box
         sx={{
@@ -210,7 +241,7 @@ const UserDetails: React.FC = () => {
           mb: 2,
         }}
       >
-        <Typography variant="h5">{user.firstName}'s Listings</Typography>
+        <Typography variant="h5">{user.firstName}&apos;s Listings</Typography>
         <FormControl sx={{ minWidth: 150 }}>
           <InputLabel>Sort By</InputLabel>
           <Select

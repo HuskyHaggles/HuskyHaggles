@@ -27,25 +27,43 @@ const Navbar: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
+  // The logged-in user object from Supabase Auth
   const [user, setUser] = useState<any>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
+  // On mount, check for an existing logged-in user
   useEffect(() => {
     const fetchUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setUser(user);
+      const { data, error } = await supabase.auth.getUser();
+      if (!error && data?.user) {
+        setUser(data.user);
+      }
     };
     fetchUser();
+
+    // Optionally, also listen for auth state changes
+    const { data: subscription } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          setUser(session.user);
+        } else {
+          setUser(null);
+        }
+      }
+    );
+
+    return () => {
+      subscription?.subscription?.unsubscribe();
+    };
   }, []);
 
+  // Common navigation function
   const handleNav = (path: string) => {
     navigate(path);
     if (isMobile) setDrawerOpen(false);
   };
 
-  // Navigation items
+  // Navigation items for all users
   const navItems = [
     { label: "Browse Listings", path: "/listings" },
     { label: "View Users", path: "/users" },
@@ -53,12 +71,13 @@ const Navbar: React.FC = () => {
     { label: "Add Listing", path: user ? "/add_listing" : "/login" },
   ];
 
-  // Auth items
+  // If user is logged in, show @username → /u/username
+  // Else show Login/Sign Up
   const authItems = user
     ? [
         {
-          label: user.user_metadata?.username || user.email,
-          path: `/u/${user.user_metadata?.username || user.email}`,
+          label: "@" + (user.user_metadata?.username ?? "yourusername"),
+          path: "/u/" + (user.user_metadata?.username ?? "yourusername"),
         },
       ]
     : [
@@ -66,10 +85,7 @@ const Navbar: React.FC = () => {
         { label: "Sign Up", path: "/signup" },
       ];
 
-  /**
-   * Determine if a button is "active".
-   * For "Add Listing", only highlight on /add_listing specifically.
-   */
+  // Determine if a button is "active"
   const getButtonSx = (itemPath: string, label: string) => {
     const isActive =
       label === "Add Listing"
@@ -77,11 +93,11 @@ const Navbar: React.FC = () => {
         : location.pathname.startsWith(itemPath);
 
     return {
-      transition: "transform 0.2s, background-color 0.2s",
+      transition: "transform 0.2s, backgroundColor: 0.2s",
       backgroundColor: isActive ? "rgba(0, 0, 0, 0.3)" : "transparent",
       "&:hover": {
         transform: "scale(1.1)",
-        backgroundColor: "rgba(0,0,0,0.5)",
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
       },
     };
   };
@@ -124,7 +140,7 @@ const Navbar: React.FC = () => {
         </Toolbar>
       </AppBar>
 
-      {/* Optional Drawer for Mobile (if you want a hamburger menu, etc.) */}
+      {/* Optional Drawer for Mobile (Hamburger menu) */}
       <Drawer
         anchor="right"
         open={drawerOpen}

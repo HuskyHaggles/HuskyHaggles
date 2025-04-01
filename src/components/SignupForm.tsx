@@ -16,13 +16,10 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import SignUpButton from "./SignUpButton";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../supabaseClient";
 
 const theme = createTheme();
 
-/**
- * SignupForm
- * Renders a registration UI. In a real app, connect to your backend for signups.
- */
 export default function SignupForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
@@ -31,16 +28,15 @@ export default function SignupForm() {
 
   const navigate = useNavigate();
 
-  const handleClickShowPassword = () => {
-    setShowPassword((prev) => !prev);
-  };
-
-  const handleClickShowConfirmPassword = () => {
+  const handleClickShowPassword = () => setShowPassword((prev) => !prev);
+  const handleClickShowConfirmPassword = () =>
     setShowConfirmPassword((prev) => !prev);
-  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setErrors([]);
+    setIsLoading(true);
+
     const data = new FormData(event.currentTarget);
     const firstName = (data.get("firstName") as string)?.trim();
     const lastName = (data.get("lastName") as string)?.trim();
@@ -50,7 +46,6 @@ export default function SignupForm() {
     const confirmPassword = data.get("confirmPassword") as string;
 
     const validationErrors: string[] = [];
-
     if (!firstName) validationErrors.push("First Name is required.");
     if (!lastName) validationErrors.push("Last Name is required.");
     if (!username) validationErrors.push("Username is required.");
@@ -58,32 +53,38 @@ export default function SignupForm() {
     if (!password) validationErrors.push("Password is required.");
     if (!confirmPassword)
       validationErrors.push("Confirm password is required.");
-
-    // Additional validations can go here:
-    // e.g. password length, email format, etc.
+    if (password !== confirmPassword) {
+      validationErrors.push("Passwords do not match.");
+    }
 
     if (validationErrors.length > 0) {
       setErrors(validationErrors);
+      setIsLoading(false);
       return;
     }
 
-    // If no errors, proceed
-    setErrors([]);
-    setIsLoading(true);
+    try {
+      // Only do auth.signUp now. No table insert yet.
+      const { data: signUpData, error: signUpError } =
+        await supabase.auth.signUp({
+          email,
+          password,
+        });
+      if (signUpError) {
+        setErrors([signUpError.message]);
+        setIsLoading(false);
+        return;
+      }
+      // signUpData.user is an unconfirmed user if email confirmation is on.
 
-    console.log({
-      firstName,
-      lastName,
-      username,
-      email,
-      password,
-      confirmPassword,
-      profilePicture: data.get("profilePicture"),
-    });
-
-    // Simulate sign-up delay
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setIsLoading(false);
+      // Show “Check email” message, then optionally navigate:
+      setIsLoading(false);
+      // We'll just show an alert or route to a 'check email' page.
+      navigate("/check-email");
+    } catch (err: any) {
+      setErrors([err.message || "Unknown error"]);
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -101,19 +102,17 @@ export default function SignupForm() {
             <Typography component="h1" variant="h5" align="center">
               Sign Up
             </Typography>
-
             {errors.length > 0 && (
               <Box sx={{ mt: 2, width: "100%" }}>
                 <Alert severity="error">
                   <ul style={{ margin: 0, paddingLeft: "1em" }}>
-                    {errors.map((error, index) => (
-                      <li key={index}>{error}</li>
+                    {errors.map((error, idx) => (
+                      <li key={idx}>{error}</li>
                     ))}
                   </ul>
                 </Alert>
               </Box>
             )}
-
             <Box
               component="form"
               onSubmit={handleSubmit}
@@ -140,7 +139,6 @@ export default function SignupForm() {
                   autoComplete="family-name"
                 />
               </Box>
-
               <TextField
                 margin="normal"
                 required
@@ -149,7 +147,6 @@ export default function SignupForm() {
                 label="Username"
                 name="username"
               />
-
               <TextField
                 margin="normal"
                 required
@@ -159,7 +156,6 @@ export default function SignupForm() {
                 name="email"
                 autoComplete="email"
               />
-
               <TextField
                 margin="normal"
                 required
@@ -179,7 +175,6 @@ export default function SignupForm() {
                   ),
                 }}
               />
-
               <TextField
                 margin="normal"
                 required
@@ -207,21 +202,9 @@ export default function SignupForm() {
                 }}
               />
 
-              <Box sx={{ mt: 2 }}>
-                <Button variant="contained" component="label" fullWidth>
-                  Upload profile picture (optional)
-                  <input
-                    hidden
-                    accept="image/*"
-                    type="file"
-                    name="profilePicture"
-                  />
-                </Button>
-              </Box>
-
+              {/* Omit the immediate row insert. We'll do that after confirmation + login. */}
               <SignUpButton isLoading={isLoading} />
             </Box>
-
             <Box sx={{ mt: 2, textAlign: "center" }}>
               <Typography variant="body2">
                 Already have an account?{" "}
