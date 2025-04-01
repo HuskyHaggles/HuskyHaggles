@@ -24,7 +24,7 @@ interface User {
 interface Listing {
   id: string;
   name: string;
-  description: string; // rich HTML
+  description: string;
   images: string[];
   price?: number;
   category?: string;
@@ -55,7 +55,16 @@ const ListingDetails: React.FC = () => {
         .from("listings")
         .select(
           `
-          id, name, description, images, price, category, location, condition, created_at, user_id,
+          id,
+          name,
+          description,
+          images,
+          price,
+          category,
+          location,
+          condition,
+          created_at,
+          user_id,
           users ( firstName, lastName, username, profile_picture )
         `
         )
@@ -65,14 +74,11 @@ const ListingDetails: React.FC = () => {
       if (error) {
         console.error("Error fetching listing:", error.message);
       } else if (data) {
-        const listingData: Listing = {
-          ...data,
-          users:
-            data.users && Array.isArray(data.users) && data.users.length > 0
-              ? data.users[0]
-              : data.users,
-        };
-        setListing(listingData);
+        // If Supabase returns the user relationship as an array, take the first element.
+        const userData: User | undefined = Array.isArray(data.users)
+          ? (data.users[0] as User)
+          : data.users;
+        setListing({ ...data, users: userData });
       }
       setLoading(false);
     };
@@ -191,12 +197,10 @@ const ListingDetails: React.FC = () => {
                 </Box>
               )}
             </Box>
-
             <Box sx={{ mt: 2 }}>
               <Typography variant="h4" sx={{ fontWeight: "bold", mb: 1 }}>
                 {listing.name}
               </Typography>
-              {/* Listing's HTML description */}
               <Typography
                 variant="body1"
                 dangerouslySetInnerHTML={{ __html: listing.description }}
@@ -237,9 +241,7 @@ const ListingDetails: React.FC = () => {
                   ? new Date(listing.created_at).toLocaleString()
                   : "N/A"}
               </Typography>
-
               <Divider sx={{ my: 2 }} />
-
               <Typography variant="h6" gutterBottom>
                 Seller Information
               </Typography>
@@ -277,7 +279,6 @@ const ListingDetails: React.FC = () => {
                 </Box>
               </Box>
             </Box>
-
             <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
               <Button
                 variant="outlined"

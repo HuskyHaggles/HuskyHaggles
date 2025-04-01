@@ -1,9 +1,12 @@
 // src/components/ListingsGrid.tsx
-import { Grid } from "@mui/material";
+import Grid from "@mui/material/Grid";
 import ListingCard from "./ListingCard";
+import { ComponentType } from "react";
 
 interface Listing {
   id: string;
+  name: string;
+  images: string[];
   [key: string]: any;
 }
 
@@ -11,20 +14,27 @@ interface ListingsGridProps {
   listings: Listing[];
 }
 
-/**
- * ListingsGrid
- * Renders a list of listings in a responsive grid layout.
- */
+// Create a typed version of Grid that includes the required props.
+const DivGrid = Grid as ComponentType<{
+  component: "div";
+  container?: boolean;
+  item?: boolean;
+  xs?: number;
+  sm?: number;
+  md?: number;
+  spacing?: number;
+  children: React.ReactNode;
+}>;
+
 const ListingsGrid = ({ listings }: ListingsGridProps) => {
   return (
-    <Grid container spacing={2}>
+    <DivGrid container component="div" spacing={2}>
       {listings.map((listing) => (
-        // Using new MUI Grid v2 syntax: remove "item" prop; responsive props go directly
-        <Grid key={listing.id} xs={12} sm={6} md={4}>
+        <DivGrid key={listing.id} item component="div" xs={12} sm={6} md={4}>
           <ListingCard listing={listing} />
-        </Grid>
+        </DivGrid>
       ))}
-    </Grid>
+    </DivGrid>
   );
 };
 

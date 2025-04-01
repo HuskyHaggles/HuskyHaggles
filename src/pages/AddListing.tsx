@@ -13,9 +13,6 @@ import NeighborhoodPicker from "../components/NeighborhoodPicker";
 import { supabase } from "../supabaseClient";
 import { generateListingId } from "../utils/generateListingId";
 
-/**
- * Dynamically import react-quill-new for the text editor.
- */
 const ReactQuill = React.lazy(() => import("react-quill-new"));
 import "react-quill-new/dist/quill.snow.css";
 
@@ -27,15 +24,13 @@ const AddListing: React.FC = () => {
   const [isMounted, setIsMounted] = useState(false);
   const [name, setName] = useState("");
   const [content, setContent] = useState("<p></p>");
-  const [inStock] = useState(true); // defaults to true
+  const [inStock] = useState(true);
   const [imageUrl, setImageUrl] = useState("");
   const [price, setPrice] = useState("");
   const [condition, setCondition] = useState("");
   const [category, setCategory] = useState("");
-  // Default location: Northeastern University, Boston
+  // Only pass value and onChange to NeighborhoodPicker
   const [location, setLocation] = useState("Northeastern University, Boston");
-  const [latitude, setLatitude] = useState<number>(42.339806);
-  const [longitude, setLongitude] = useState<number>(-71.08917);
 
   useEffect(() => {
     setIsMounted(true);
@@ -56,8 +51,6 @@ const AddListing: React.FC = () => {
         condition,
         category,
         location,
-        latitude,
-        longitude,
       },
     ]);
     if (error) {
@@ -83,7 +76,6 @@ const AddListing: React.FC = () => {
         </Typography>
 
         <Grid container spacing={3} sx={{ width: "100%", maxWidth: 900 }}>
-          {/* Left Column: Listing Details */}
           <Grid sx={{ width: { xs: "100%", md: "66.66%" } }}>
             <Typography fontWeight="bold" mb={1}>
               Listing Name:
@@ -93,7 +85,6 @@ const AddListing: React.FC = () => {
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
-
             <Typography fontWeight="bold" mt={2} mb={1}>
               Description:
             </Typography>
@@ -109,7 +100,6 @@ const AddListing: React.FC = () => {
             </Suspense>
           </Grid>
 
-          {/* Right Column: Additional Info */}
           <Grid sx={{ width: { xs: "100%", md: "33.33%" } }}>
             <Typography fontWeight="bold" mb={1}>
               Price:
@@ -125,7 +115,6 @@ const AddListing: React.FC = () => {
                 ),
               }}
             />
-
             <Typography fontWeight="bold" mt={2} mb={1}>
               Condition:
             </Typography>
@@ -134,7 +123,6 @@ const AddListing: React.FC = () => {
               value={condition}
               onChange={(e) => setCondition(e.target.value)}
             />
-
             <Typography fontWeight="bold" mt={2} mb={1}>
               Category:
             </Typography>
@@ -143,19 +131,12 @@ const AddListing: React.FC = () => {
               value={category}
               onChange={(e) => setCategory(e.target.value)}
             />
-
             <Typography fontWeight="bold" mt={2} mb={1}>
               Location:
             </Typography>
             <NeighborhoodPicker
               value={location}
-              latitude={latitude}
-              longitude={longitude}
-              onChange={(neighborhood, coords) => {
-                setLocation(neighborhood);
-                setLatitude(coords.lat);
-                setLongitude(coords.lng);
-              }}
+              onChange={(neighborhood) => setLocation(neighborhood)}
             />
           </Grid>
         </Grid>
